@@ -56,7 +56,7 @@ body.locked .w{display:none}
 .tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}.tab{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:20px;padding:8px 16px;font-size:13px;cursor:pointer}
 .tab.on{background:linear-gradient(90deg,#7c3aed,#ec4899);color:#fff;border-color:transparent}
 #md{position:fixed;inset:0;background:rgba(15,10,40,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
-#md .box{background:var(--card);color:var(--tx);border-radius:16px;padding:20px;width:100%;max-width:480px;max-height:90vh;overflow:auto}
+#md .box{background:var(--card);color:var(--tx);border-radius:16px;padding:20px;width:100%;max-width:720px;max-height:90vh;overflow:auto}
 #md input,#md select{width:100%;margin:6px 0}.hh{border-top:1px solid var(--bd);padding:6px 0;font-size:13px}
 .b{padding:2px 9px;border-radius:10px;font-size:12px;color:#fff;white-space:nowrap}.b.g{background:#10b981}.b.y{background:#f59e0b}.b.r{background:#f43f5e}.b.n{background:#6366f1}
 #f_k{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
@@ -98,9 +98,11 @@ select,input{border-radius:10px}select:focus,input:focus{outline:2px solid var(-
 <div id="k" style="margin-bottom:14px"></div>
 <div class="g2"><div class="c"><h3>Campus-wise (fees due till date)</h3><div class="lg"><b class="p"></b>Paid<b class="q"></b>Pending</div><div id="cm"></div></div>
 <div class="c"><h3>Batch-wise (fees due till date)</h3><div class="lg"><b class="p"></b>Paid<b class="q"></b>Pending</div><div id="bt"></div></div></div>
+<div class="c" style="margin-bottom:12px"><h3>Campus x Batch (fees due till date)</h3><div class="tw"><table id="cb" style="min-width:760px"></table></div></div>
 <div class="c" style="margin-bottom:12px"><h3>Campus-wise (all metrics)</h3><div class="tw"><table id="cp" style="min-width:1150px"></table></div></div>
 <div class="c" style="margin-bottom:12px"><h3>Batch-wise (all metrics)</h3><div class="tw"><table id="bt2" style="min-width:1150px"></table></div></div>
 <div class="c" style="margin-bottom:12px"><h3>Loan type-wise (all metrics)</h3><div class="tw"><table id="ln" style="min-width:1150px"></table></div></div>
+<div class="c" style="margin-bottom:12px"><h3>Fee header-wise (Sunstone / Year / other installments; Year split into semesters)</h3><div class="tw"><table id="hd" style="min-width:900px"></table></div></div>
 <div class="g2"><div class="c"><h3>Semester-wise (total)</h3><div class="lg"><b class="p"></b>Paid<b class="q"></b>Pending</div><div id="sm"></div></div>
 <div class="c"><h3>Batch x Semester pending</h3><div class="tw"><table id="bs" style="min-width:560px"></table></div></div></div>
 <div class="c"><div class="top" style="margin:0 0 8px"><h3 style="margin:0">Top pending students</h3><input id="q" placeholder="Search by name or ID"></div>
@@ -112,12 +114,12 @@ select,input{border-radius:10px}select:focus,input:focus{outline:2px solid var(-
 <div class="c"><div class="top" style="margin:0 0 6px"><div class="sub" id="s_n"></div><button class="btn adm" onclick="expS()">Export CSV</button></div><div class="tw"><table style="min-width:900px"><thead><tr><th>Name</th><th>ID</th><th>Campus</th><th>Batch</th><th>Pending till date</th><th>Cur sem pending</th><th>Previous pending</th><th>Latest disposition</th><th>Entries</th><th></th></tr></thead><tbody id="s_t"></tbody></table></div></div></div>
 <div id="pg3" hidden>
 <div class="fl"><span class="sub" style="align-self:center">Promise date:</span><input type="date" id="f_a" onchange="drawF()"><span class="sub" style="align-self:center">to</span><input type="date" id="f_b" onchange="drawF()">
-<select id="f_s" onchange="drawF()"><option value="">All statuses</option><option value="paid">Paid</option><option value="part">Partly paid</option><option value="np">Not paid yet (promise date upcoming)</option><option value="over">Not paid (promise date passed)</option></select><select id="f_c" onchange="drawF()"></select><select id="f_m" onchange="drawF()"><option value="latest">Latest promise per student</option><option value="all">All promises (full history)</option></select></div>
+<select id="f_s" onchange="drawF()"><option value="">All statuses</option><option value="paid">Paid</option><option value="part">Partly paid</option><option value="np">Not paid yet (promise date upcoming)</option><option value="over">Not paid (promise date passed)</option></select><select id="f_c" onchange="drawF()"></select><select id="f_m" onchange="drawF()"><option value="latest">Latest promise per student / fee header</option><option value="all">All promises (full history)</option></select></div>
 <div id="f_k"></div>
 <div class="c" style="margin-bottom:12px"><h3>Date-wise promises</h3><div class="tw"><table id="f_d" style="min-width:560px"></table></div></div>
-<div class="c"><div class="top" style="margin:0 0 8px"><h3 style="margin:0">What students promised</h3><button class="btn adm" onclick="expF()">Export CSV</button></div><div class="tw"><table style="min-width:1300px"><thead><tr><th>Name</th><th>ID</th><th>Campus</th><th>Batch</th><th>Promise date</th><th>Reason</th><th>Pending (then)</th><th>Pending (now)</th><th>Paid since</th><th>Status</th><th>Note</th><th>Logged by</th><th></th></tr></thead><tbody id="f_t"></tbody></table></div></div></div>
-<div id="md"><div class="box"><h3 id="m_t" style="margin-bottom:4px"></h3><div class="sub" id="m_i" style="margin-bottom:10px"></div>
-<div class="sub" style="font-weight:700;color:var(--tx)">Add a new disposition</div><select id="m_r"><option value="">Select reason</option><option>Promised to pay (gave a date)</option><option>Loan in process</option><option>Discussed with parents</option><option>Waiting for scholarship / refund</option><option>Not picking up calls</option><option>Refused to pay fees</option><option>Financial problem</option><option>Other</option></select>
+<div class="c"><div class="top" style="margin:0 0 8px"><h3 style="margin:0">What students promised</h3><button class="btn adm" onclick="expF()">Export CSV</button></div><div class="tw"><table style="min-width:1300px"><thead><tr><th>Name</th><th>ID</th><th>Campus</th><th>Batch</th><th>Promise date</th><th>Reason</th><th>Fee header</th><th>Pending (then)</th><th>Pending (now)</th><th>Paid since</th><th>Status</th><th>Note</th><th>Logged by</th><th></th></tr></thead><tbody id="f_t"></tbody></table></div></div></div>
+<div id="md"><div class="box"><h3 id="m_t" style="margin-bottom:4px"></h3><div class="sub" id="m_i" style="margin-bottom:10px"></div><div id="m_b" style="margin-bottom:12px;max-height:230px;overflow:auto"></div>
+<div class="sub" style="font-weight:700;color:var(--tx)">Add a new disposition</div><div id="m_f" class="sub" style="margin:4px 0 2px"></div><select id="m_r"><option value="">Select reason</option><option>Promised to pay (gave a date)</option><option>Loan in process</option><option>Discussed with parents</option><option>Waiting for scholarship / refund</option><option>Not picking up calls</option><option>Refused to pay fees</option><option>Financial problem</option><option>Other</option></select>
 <div class="sub">Date the student promised to pay by (promise date)</div><input type="date" id="m_d"><input id="m_n" placeholder="Note (optional)">
 <div id="m_e" style="color:var(--bad);font-size:13px;min-height:16px"></div>
 <div style="display:flex;gap:8px;margin:6px 0 10px"><button class="btn" id="m_s" onclick="saveD()">Save</button><button class="btn g" onclick="closeD()">Close</button></div>
@@ -159,14 +161,53 @@ var lg=group(a.map(function(r){return Object.assign({},r,{LT:cat(r['Loan Partner
 MT('ln','Loan type',lg,['Self Pay','Bank Loan','DRCC','Sunstone Loan','Student interested'].filter(function(n){return lg[n]}));
 var sh=['Batch'];for(var i=1;i<=8;i++)sh.push('Sem '+i+' pending');sh.push('Total pending');
 var brow=function(n,g){var r=[n];for(var i=1;i<=8;i++)r.push(fmt(sum(g,'Sem'+i+' Fee Pending')));r.push(fmt(sum(g,'Total Fee Pending')));return r};
-tbl('bs',sh,Object.keys(bg).sort().map(function(n){return brow(n,bg[n])}),brow('Total',a));
+tbl('bs',sh,Object.keys(bg).sort().map(function(n){return brow(n,bg[n])}),brow('Total',a));hdrTable(a);cbTable(a);
 var t=$('q').value.toLowerCase();
 var top=a.filter(function(r){return num(r['Total Fee Pending Till Date'])>0&&(!t||(String(r.Name)+String(r.ID)).toLowerCase().indexOf(t)>-1)}).sort(function(x,y){return num(y['Total Fee Pending Till Date'])-num(x['Total Fee Pending Till Date'])}).slice(0,50);
 $('tb').innerHTML=top.map(function(r){return '<tr><td>'+(r.Name||'')+'</td><td>'+(r.ID||'')+'</td><td>'+(r.Campus_Name||'')+'</td><td>'+(r.Batch||'')+'</td><td class="bad">'+fmt(num(r['Total Fee Pending Till Date']))+'</td><td>'+fmt(r._ce)+'</td><td>'+fmt(num(r['Previous pending']))+'</td></tr>'}).join('')||'<tr><td colspan="7" class="sub">No students found</td></tr>'}
 function cs(b){var d=new Date(),s=(d.getFullYear()-num(b))*2+(d.getMonth()>=7?1:0);return Math.min(8,Math.max(1,s))}
-function load(rows,label,keep){rows=rows.filter(function(r){return r.ID&&r.Name&&r.ID!=='ID'&&String(r.Active_Status).trim().toLowerCase()==='active'});IDX={};rows.forEach(function(r){r.Batch=String(r.Batch==null?'':r.Batch).trim();r.Campus_Name=String(r.Campus_Name==null?'':r.Campus_Name).trim()});rows.forEach(splitYear);;rows.forEach(function(r){var c=cs(r.Batch);IDX[r.ID]=r;if(r._y){var pv=0;for(var k=1;k<c;k++)pv+=num(r['Sem'+k+' Fee Pending']);r['Previous pending']=pv}r._cp=num(r['Sem'+c+' Fee Paid']);r._ce=num(r['Sem'+c+' Fee Pending']);r._cf=r._cp+r._ce});R=rows;if(!keep)F={Campus_Name:'',Batch:'',Program_Name:''};$('src').textContent=label;build();draw();fillF();if(pg===2)drawS();if(pg===3)drawF()}
+/* Fee dump (raw payment dump OR the installment-wise sheet export) -> one row per student. Runs only if rows have "uols_id". */
+function xd(v){var s=String(v==null?'':v).trim();if(/^\d{5}(\.\d+)?$/.test(s))return new Date(Date.UTC(1899,11,30)+Math.floor(parseFloat(s))*864e5).toISOString().slice(0,10);return s.slice(0,10)}
+function maybeDump(rows,asOf){
+  if(!rows.length||rows[0].uols_id===undefined)return rows;
+  var td=asOf||today(),I={},S={},M={};
+  rows.forEach(function(r){var m=M[r.user_id]=M[r.user_id]||{},b=String(r.Admission_Year!==undefined?r.Admission_Year:r.Batch).trim(),n=r.Student_Name||r.Name;
+    if(r.Campus_Name&&!m.c)m.c=String(r.Campus_Name).trim();if(/^\d{4}$/.test(b)&&!m.b)m.b=b;if(n&&!m.n)m.n=n;if(r.Active_Status&&!m.s)m.s=r.Active_Status;
+    if(String(r.fee_belongs_to).trim()==='REFUND')return;
+    var k=r.uols_id,x=I[k];
+    if(!x)x=I[k]={u:r.user_id,h:String(r.installment_name||'').trim(),sem:parseInt(String(r.Term||'').replace(/\D/g,''))||0,due:num(r.post_amount),dl:xd(r.deadline),paid:0};
+    x.paid+=num(r.paid_amount)});
+  Object.keys(I).forEach(function(k){var x=I[k],m=M[x.u];if(!m.c||!m.b)return;/* students without campus/batch are not active students */
+    var p=Math.max(0,Math.min(x.paid,x.due)),q=x.due-p,
+    o=S[x.u]=S[x.u]||{Batch:m.b,ID:x.u,Name:m.n||('User '+x.u),Campus_Name:m.c,Active_Status:m.s||'Active','Loan Partners':'','Total Fee':0,'Total Fee Paid':0,'Total Fee Pending':0,'Total Fee Till Date':0,'Total Fee Paid Till Date':0,'Total Fee Pending Till Date':0,'Previous pending':0,_I:[]};
+    o._I.push({h:x.h,sem:x.sem,due:x.due,paid:p,dl:x.dl});o['Total Fee']+=x.due;o['Total Fee Paid']+=x.paid;
+    if(x.dl&&x.dl<=td){o['Total Fee Till Date']+=x.due;o['Total Fee Paid Till Date']+=x.paid}
+    if(x.sem>=1&&x.sem<=8){o['Sem'+x.sem+' Fee Paid']=(o['Sem'+x.sem+' Fee Paid']||0)+p;o['Sem'+x.sem+' Fee Pending']=(o['Sem'+x.sem+' Fee Pending']||0)+q}});
+  return Object.keys(S).map(function(u){var o=S[u],c=cs(o.Batch),pv=0;
+    o['Total Fee Pending']=Math.max(0,o['Total Fee']-o['Total Fee Paid']);o['Total Fee Pending Till Date']=Math.max(0,o['Total Fee Till Date']-o['Total Fee Paid Till Date']);/* pending per student, never negative */
+    for(var i=1;i<=8;i++){o['Sem'+i+' Fee Paid']=o['Sem'+i+' Fee Paid']||0;o['Sem'+i+' Fee Pending']=o['Sem'+i+' Fee Pending']||0;if(i<c)pv+=o['Sem'+i+' Fee Pending']}
+    o['Previous pending']=pv;return o})}
+function cbTable(a){var M={};a.forEach(function(r){var k=r.Campus_Name+'|'+r.Batch,m=M[k]=M[k]||{c:r.Campus_Name,b:r.Batch,n:0,d:0,p:0,q:0};m.n++;m.d+=num(r['Total Fee Till Date']);m.p+=num(r['Total Fee Paid Till Date']);m.q+=num(r['Total Fee Pending Till Date'])});
+  var L=Object.keys(M).map(function(k){return M[k]}).sort(function(x,y){return x.c.localeCompare(y.c)||String(x.b).localeCompare(String(y.b))}),T={n:0,d:0,p:0,q:0},N=function(v){return Math.round(v).toLocaleString('en-IN')};
+  var pc=function(q,d){var v=d?q/d*100:0,c=v<5?'#15803d':v<20?'#b45309':'#b91c1c';return '<span style="color:'+c+';font-weight:700">'+v.toFixed(2)+'%</span>'};
+  var rows=L.map(function(m){T.n+=m.n;T.d+=m.d;T.p+=m.p;T.q+=m.q;return[m.c,m.b,m.n,N(m.d),N(m.p),N(m.q),pc(m.q,m.d)]});
+  tbl('cb',['Campus','Batch','Total active students','Total amount till date','Amount paid till date','Amount pending till date','Pending %'],rows,['Total','',T.n,N(T.d),N(T.p),N(T.q),pc(T.q,T.d)])}
+/* Header-wise table: Sunstone 1-8, Year 1-4 (each Year split into 2 semesters, 50/50, paid applied to first half first), rest as "Other" */
+function hdrTable(a){var td=today(),M={},ORD=[];for(var i=1;i<=8;i++)ORD.push('Sunstone '+i);for(i=1;i<=4;i++)ORD.push('Year '+i);ORD.push('Other');
+  var has=a.some(function(r){return r._I});
+  if(!has){$('hd').innerHTML='<tbody><tr><td class="sub">Header-wise data needs the raw fee dump (with installment_name). Upload it or load it from the sheet.</td></tr></tbody>';return}
+  var add=function(sid,hd,sem,due,paid,dl){var g=ORD.indexOf(hd)>-1?hd:'Other',k=g+'|'+sem,m=M[k]=M[k]||{g:g,sem:sem,s:{},d:0,p:0,dt:0,pt:0};
+    m.s[sid]=1;m.d+=due;m.p+=paid;if(dl&&dl<=td){m.dt+=due;m.pt+=paid}};
+  a.forEach(function(r){(r._I||[]).forEach(function(x){
+    if(/^year\s*\d/i.test(x.h)){var half=x.due/2,p1=Math.min(x.paid,half);add(r.ID,x.h,x.sem,half,p1,x.dl);add(r.ID,x.h,Math.min(8,x.sem+1),half,x.paid-p1,x.dl)}
+    else add(r.ID,x.h,x.sem,x.due,x.paid,x.dl)})});
+  var L=Object.keys(M).map(function(k){return M[k]}).sort(function(x,y){return ORD.indexOf(x.g)-ORD.indexOf(y.g)||x.sem-y.sem});
+  var T={d:0,p:0,dt:0,pt:0};
+  var rows=L.map(function(m){T.d+=m.d;T.p+=m.p;T.dt+=m.dt;T.pt+=m.pt;return[m.g+' · Sem '+(m.sem||'-'),Object.keys(m.s).length,fmt(m.d),fmt(m.p),fmt(m.d-m.p),fmt(m.dt),fmt(m.pt),fmt(m.dt-m.pt)]});
+  tbl('hd',['Fee header · Semester','Students','Total fee','Collected','Pending','Fee till date','Collected till date','Pending till date'],rows,['Total','',fmt(T.d),fmt(T.p),fmt(T.d-T.p),fmt(T.dt),fmt(T.pt),fmt(T.dt-T.pt)])}
+function load(rows,label,keep){rows=maybeDump(rows);rows=rows.filter(function(r){return r.ID&&r.Name&&r.ID!=='ID'&&String(r.Active_Status).trim().toLowerCase()==='active'});IDX={};rows.forEach(function(r){r.Batch=String(r.Batch==null?'':r.Batch).trim();r.Campus_Name=String(r.Campus_Name==null?'':r.Campus_Name).trim()});rows.forEach(splitYear);;rows.forEach(function(r){var c=cs(r.Batch);IDX[r.ID]=r;if(r._y){var pv=0;for(var k=1;k<c;k++)pv+=num(r['Sem'+k+' Fee Pending']);r['Previous pending']=pv}r._cp=num(r['Sem'+c+' Fee Paid']);r._ce=num(r['Sem'+c+' Fee Pending']);r._cf=r._cp+r._ce});R=rows;if(!keep)F={Campus_Name:'',Batch:'',Program_Name:''};$('src').textContent=label;build();draw();fillF();if(pg===2)drawS();if(pg===3)drawF()}
 $('q').oninput=draw;
-$('f').onchange=function(e){var f=e.target.files[0];if(!f)return;Papa.parse(f,{header:true,skipEmptyLines:true,complete:function(r){load(r.data,f.name+' ('+r.data.length+' students)')}})};
+$('f').onchange=function(e){var f=e.target.files[0];if(!f)return;Papa.parse(f,{header:true,skipEmptyLines:true,complete:function(r){load(r.data,f.name+' ('+r.data.length+' rows)')}})};
 function demo(){var C=['Delhi','Pune','Bangalore','Jaipur'],B=['2023','2024','2025'],P=['B.Tech CSE','BBA'],L=['None','Partner A','Partner B'],BK=['0','1-30 days','31-60 days','60+ days'],d=[];
 for(var i=0;i<300;i++){var fee=400000+Math.floor(Math.random()*200000),per=fee/8,td=per*(2+Math.floor(Math.random()*4)),pt=td*(0.5+Math.random()*0.5),ov=td-pt,pd=pt+(Math.random()<.4?per:0);
 var r={Name:'Student '+(i+1),ID:'S'+(1000+i),Campus_Name:C[i%4],Batch:B[i%3],Program_Name:P[i%2],Active_Status:Math.random()<.92?'Active':'Inactive','Total Fee':fee,'Total Fee Paid':pd,'Total Fee Pending':fee-pd,'Total Fee Till Date':td,'Total Fee Paid Till Date':pt,'Total Fee Pending Till Date':ov,'Total Fee Pending Till Date Bucket':ov<1?BK[0]:BK[1+Math.floor(Math.random()*3)],'Fee Deadline Date':'2026-10-15','Loan Partners':L[Math.floor(Math.random()*3)],'Late fees':ov>0?Math.floor(Math.random()*5000):0};
@@ -186,7 +227,7 @@ for(var n=1;n<=7;n+=2){var P='Sem'+n+' Fee Paid',Q='Sem'+n+' Fee Pending',P2='Se
 var p=num(r[P]),q=num(r[Q]),p2=num(r[P2]),q2=num(r[Q2]);if(p+q<=0||p2+q2>0)continue;
 var h=(p+q)/2,a=Math.min(p,h);r[P]=a;r[Q]=h-a;r[P2]=p-a;r[Q2]=h-(p-a);r._y=1}}
 var API='https://script.google.com/macros/s/AKfycbwA8ONhlLRxEN_uIjHeLu6m_iNQ40Lkk-7GTVxcEaFPUbVxBfgbCQbX8smOkTZFG4dh/exec';/* paste your Apps Script link here, see the SETUP file */
-var IDX={},DISP=[],pg=1,CUR=null;
+var IDX={},DISP=[],pg=1,CUR=null,CURH='';
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function today(){var d=new Date(),p=function(n){return('0'+n).slice(-2)};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
 function dLoad(cb){$('dnote').textContent=API?'':'Setup is not finished: paste your Apps Script link into var API in index.html.';
@@ -198,28 +239,43 @@ function hist(id){return DISP.filter(function(d){return String(d.id)===String(id
 function go(n){pg=n;[1,2,3].forEach(function(i){$('pg'+i).hidden=i!==n;$('t'+i).classList.toggle('on',i===n)});if(n===2)drawS();if(n===3)drawF()}
 function opts(el,all,list){var cur=$(el).value;$(el).innerHTML='<option value="">'+all+'</option>'+list.map(function(v){return'<option>'+esc(v)+'</option>'}).join('');$(el).value=cur}
 function fillF(){var u=function(k){return Array.from(new Set(R.map(function(r){return r[k]}).filter(Boolean))).sort()};opts('s_c','All campuses',u('Campus_Name'));opts('s_b','All batches',u('Batch'));opts('f_c','All campuses',u('Campus_Name'))}
+/* Per-student fee header-wise split (installments due till date; Year split into 2 semesters 50/50) */
+function feeRows(r){if(!r||!r._I)return null;var td=today(),L=[],add=function(h,s,d,p){if(d>0)L.push({h:h,s:s,d:d,p:p,q:Math.max(0,d-p),k:h+' · Sem '+(s||'-')})};
+  r._I.forEach(function(x){if(!x.dl||x.dl>td)return;
+    if(/^year\s*\d/i.test(x.h)){var half=x.due/2,p1=Math.min(x.paid,half);add(x.h,x.sem,half,p1);add(x.h,Math.min(8,x.sem+1),half,x.paid-p1)}else add(x.h,x.sem,x.due,x.paid)});
+  L.sort(function(a,b){return a.s-b.s||a.h.localeCompare(b.h,undefined,{numeric:true})});return L}
+function hdrPend(r,k){var L=feeRows(r)||[];for(var i=0;i<L.length;i++)if(L[i].k===k)return L[i].q;return 0}
+function latestH(id,k){for(var i=DISP.length-1;i>=0;i--)if(String(DISP[i].id)===String(id)&&(DISP[i].header||'')===k)return DISP[i];return null}
+function feeBreak(r){var L=feeRows(r);if(!L)return '<div class="sub">Header-wise split needs the fee dump (with installment_name).</div>';
+  var T=L.reduce(function(t,x){t.d+=x.d;t.p+=x.p;t.q+=x.q;return t},{d:0,p:0,q:0}),N=function(v){return Math.round(v).toLocaleString('en-IN')},R_='style="text-align:right"';
+  if(!L.length)return '<div class="sub">No fee is due till date.</div>';
+  return '<div style="font-weight:700;margin:2px 0 6px">Fee header-wise split (till date)</div><table style="min-width:0;font-size:12px"><thead><tr><th>Fee header</th><th '+R_+'>Due</th><th '+R_+'>Paid</th><th '+R_+'>Pending</th><th '+R_+'>%</th><th>Disposition</th><th></th></tr></thead><tbody>'+
+   L.map(function(x){var l=latestH(r.ID,x.k);return '<tr><td>'+esc(x.k)+'</td><td '+R_+'>'+N(x.d)+'</td><td '+R_+'>'+N(x.p)+'</td><td style="text-align:right'+(x.q>0?';color:#dc2626;font-weight:700':'')+'">'+N(x.q)+'</td><td '+R_+'>'+(T.q?Math.round(x.q/T.q*100)+'%':'-')+'</td><td>'+(l?'<b>'+esc(l.reason)+'</b>'+(l.promise_date?' · '+esc(l.promise_date):''):'<span class="mu">-</span>')+'</td><td>'+(x.q>0?'<button class="btn g" style="padding:3px 9px;font-size:11px" data-id="'+esc(r.ID)+'" data-h="'+esc(x.k)+'" onclick="openD(this.dataset.id,this.dataset.h)">'+(l?'Add / History':'Add')+'</button>':'')+'</td></tr>'}).join('')+
+   '<tr style="font-weight:700;background:#eef6fb"><td>Total</td><td '+R_+'>'+N(T.d)+'</td><td '+R_+'>'+N(T.p)+'</td><td '+R_+'>'+N(T.q)+'</td><td '+R_+'>100%</td><td></td><td></td></tr></tbody></table>'}
+function toggleSp(b){var tr=b.closest('tr'),nx=tr.nextElementSibling;if(nx&&nx.className==='sp'){nx.remove();b.textContent='Fee split \u25BE';return}
+  var t=document.createElement('tr');t.className='sp';t.innerHTML='<td colspan="10" style="white-space:normal;background:#f8fbfe;padding:10px 16px">'+feeBreak(IDX[b.dataset.id])+'</td>';tr.after(t);b.textContent='Fee split \u25B4'}
 function drawS(){var CNT={};DISP.forEach(function(d){var k=String(d.id);CNT[k]=(CNT[k]||0)+1});var q=$('s_q').value.toLowerCase(),c=$('s_c').value,b=$('s_b').value,m=$('s_d').value,pp=$('s_p').value;
 var a=R.filter(function(r){var l=latest(r.ID);return(!c||r.Campus_Name===c)&&(!b||r.Batch===b)&&(!q||(String(r.Name)+String(r.ID)).toLowerCase().indexOf(q)>-1)&&(pp==='all'||num(r['Total Fee Pending Till Date'])>0)&&(m!=='has'||l)&&(m!=='none'||!l)});
 a.sort(function(x,y){return num(y['Total Fee Pending Till Date'])-num(x['Total Fee Pending Till Date'])});
 LS=a;$('s_n').textContent=a.length+' students'+(a.length>200?' (showing top 200, use filters)':'');
-$('s_t').innerHTML=a.slice(0,200).map(function(r){var l=latest(r.ID),ds=l?'<b>'+esc(l.reason)+'</b>'+(l.promise_date?' &middot; '+esc(l.promise_date):''):'<span class="mu">-</span>';
-return'<tr><td>'+esc(r.Name)+'</td><td>'+esc(r.ID)+'</td><td>'+esc(r.Campus_Name)+'</td><td>'+esc(r.Batch)+'</td><td class="bad">'+fmt(num(r['Total Fee Pending Till Date']))+'</td><td>'+fmt(r._ce)+'</td><td>'+fmt(num(r['Previous pending']))+'</td><td>'+ds+'</td><td>'+(CNT[String(r.ID)]||0)+'</td><td><button class="btn" data-id="'+esc(r.ID)+'" onclick="openD(this.dataset.id)">'+(l?'History / Add':'Add')+'</button></td></tr>'}).join('')||'<tr><td colspan="10" class="sub">No students found</td></tr>'}
+$('s_t').innerHTML=a.slice(0,200).map(function(r){var l=latest(r.ID),ds=l?'<b>'+esc(l.reason)+'</b>'+(l.header?' <span class="mu">('+esc(l.header)+')</span>':'')+(l.promise_date?' &middot; '+esc(l.promise_date):''):'<span class="mu">-</span>';
+return'<tr><td>'+esc(r.Name)+'</td><td>'+esc(r.ID)+'</td><td>'+esc(r.Campus_Name)+'</td><td>'+esc(r.Batch)+'</td><td class="bad">'+fmt(num(r['Total Fee Pending Till Date']))+'</td><td>'+fmt(r._ce)+'</td><td>'+fmt(num(r['Previous pending']))+'</td><td>'+ds+'</td><td>'+(CNT[String(r.ID)]||0)+'</td><td><button class="btn g" data-id="'+esc(r.ID)+'" onclick="toggleSp(this)">Fee split &#9662;</button> <button class="btn" data-id="'+esc(r.ID)+'" onclick="openD(this.dataset.id)">'+(l?'History / Add':'Add')+'</button></td></tr>'}).join('')||'<tr><td colspan="10" class="sub">No students found</td></tr>'}
 function renderHist(id){var h=hist(id).slice().reverse(),n=h.length;$('m_hn').textContent=n?' ('+n+')':'';
 $('m_h').innerHTML=n?h.map(function(d,i){var pt=(d.pending_at_time===''||d.pending_at_time==null)?'':'Pending then '+fmt(num(d.pending_at_time)),l2=[d.promise_date?'Promise date: <b>'+esc(d.promise_date)+'</b>':'',pt].filter(Boolean).join(' · ');
-return'<div class="hh"><div><span class="b n">#'+(n-i)+'</span> <b>'+esc(d.reason)+'</b></div>'+(l2?'<div>'+l2+'</div>':'')+(d.note?'<div>'+esc(d.note)+'</div>':'')+'<div class="mu">'+new Date(Number(d.ts)).toLocaleString('en-IN')+(d.by?' · '+esc(d.by):'')+'</div></div>'}).join(''):'<div class="mu">No dispositions yet</div>'}
-function openD(id){var r=IDX[id];if(!r)return;CUR=id;$('m_t').textContent=r.Name+' ('+r.ID+')';
+return'<div class="hh"><div><span class="b n">#'+(n-i)+'</span> <b>'+esc(d.reason)+'</b> <span class="b y">'+esc(d.header||'Overall')+'</span></div>'+(l2?'<div>'+l2+'</div>':'')+(d.note?'<div>'+esc(d.note)+'</div>':'')+'<div class="mu">'+new Date(Number(d.ts)).toLocaleString('en-IN')+(d.by?' · '+esc(d.by):'')+'</div></div>'}).join(''):'<div class="mu">No dispositions yet</div>'}
+function openD(id,hdr){var r=IDX[id];if(!r)return;CUR=id;CURH=hdr||'';$('m_t').textContent=r.Name+' ('+r.ID+')';
 $('m_i').textContent=r.Campus_Name+' · Batch '+r.Batch+' · Pending till date '+fmt(num(r['Total Fee Pending Till Date']))+' · Cur sem pending '+fmt(r._ce)+' · Previous pending '+fmt(num(r['Previous pending']));
-$('m_r').value='';$('m_n').value='';$('m_d').value='';$('m_e').textContent='';
+$('m_f').innerHTML=CURH?'For fee header: <b>'+esc(CURH)+'</b> · pending '+fmt(hdrPend(r,CURH))+' <button class="btn g" style="padding:2px 8px;font-size:11px" onclick="openD(CUR)">Whole student instead</button>':'For the <b>whole student</b>. To log it for one fee header, press Add next to that header below.';$('m_b').innerHTML=feeBreak(r);$('m_r').value='';$('m_n').value='';$('m_d').value='';$('m_e').textContent='';
 renderHist(id);$('m_e').style.color='var(--bad)';$('md').style.display='flex'}
 function closeD(){$('md').style.display='none'}
 function saveD(){$('m_e').style.color='var(--bad)';var re=$('m_r').value;if(!re){$('m_e').textContent='Please select a reason first';return}var r=IDX[CUR],u='';try{u=sessionStorage.getItem('user')||''}catch(e){}
-var row={ts:Date.now(),id:r.ID,name:r.Name,campus:r.Campus_Name,batch:r.Batch,reason:re,promise_date:$('m_d').value,pending_at_time:num(r['Total Fee Pending Till Date']),note:$('m_n').value.trim(),by:u};
-$('m_s').disabled=true;dSave(row,function(ok){$('m_s').disabled=false;if(!ok){$('m_e').textContent='Could not save. Check your internet or the Apps Script link.';return}$('m_r').value='';$('m_n').value='';$('m_d').value='';$('m_e').style.color='var(--ok)';$('m_e').textContent='Saved. You can add another.';renderHist(CUR);if(pg===2)drawS();if(pg===3)drawF()})}
+var row={ts:Date.now(),id:r.ID,name:r.Name,campus:r.Campus_Name,batch:r.Batch,reason:re,promise_date:$('m_d').value,pending_at_time:CURH?hdrPend(r,CURH):num(r['Total Fee Pending Till Date']),header:CURH,note:$('m_n').value.trim(),by:u};
+$('m_s').disabled=true;dSave(row,function(ok){$('m_s').disabled=false;if(!ok){$('m_e').textContent='Could not save. Check your internet or the Apps Script link.';return}$('m_r').value='';$('m_n').value='';$('m_d').value='';$('m_e').style.color='var(--ok)';$('m_e').textContent='Saved. You can add another.';renderHist(CUR);$('m_b').innerHTML=feeBreak(IDX[CUR]);if(pg===2)drawS();if(pg===3)drawF()})}
 var SL={paid:['Paid','g'],part:['Partly paid','y'],np:['Not paid yet','n'],over:['Not paid, date passed','r']};
-function stat(r,d){var cur=num(r['Total Fee Pending Till Date']),at=num(d.pending_at_time),pd=Math.max(0,at-cur);return{cur:cur,at:at,pd:pd,s:cur<=0?'paid':pd>0?'part':(String(d.promise_date)<today()?'over':'np')}}
+function stat(r,d){var cur=d.header?hdrPend(r,d.header):num(r['Total Fee Pending Till Date']),at=num(d.pending_at_time),pd=Math.max(0,at-cur);return{cur:cur,at:at,pd:pd,s:cur<=0?'paid':pd>0?'part':(String(d.promise_date)<today()?'over':'np')}}
 function drawF(){var a0=$('f_a').value,b0=$('f_b').value,sf=$('f_s').value,cf=$('f_c').value,L=[];
 var mode=$('f_m').value,P=[];
-if(mode==='all'){DISP.forEach(function(d){var r=IDX[d.id];if(r)P.push({r:r,d:d})})}else{R.forEach(function(r){var d=latest(r.ID);if(d)P.push({r:r,d:d})})}
+if(mode==='all'){DISP.forEach(function(d){var r=IDX[d.id];if(r)P.push({r:r,d:d})})}else{var LM={};DISP.forEach(function(d){LM[d.id+'|'+(d.header||'')]=d});Object.keys(LM).forEach(function(k){var d=LM[k],r=IDX[d.id];if(r)P.push({r:r,d:d})})}
 P.forEach(function(x){var r=x.r,d=x.d;if(!d.promise_date)return;var pd=String(d.promise_date);if(a0&&pd<a0)return;if(b0&&pd>b0)return;if(cf&&r.Campus_Name!==cf)return;var st=stat(r,d);if(sf&&st.s!==sf)return;L.push({r:r,d:d,st:st})});
 L.sort(function(x,y){return String(x.d.promise_date).localeCompare(String(y.d.promise_date))||y.st.cur-x.st.cur});
 LF=L;var S=function(f){return L.reduce(function(s,x){return s+f(x)},0)},full=L.filter(function(x){return x.st.s==='paid'}).length;
@@ -228,12 +284,12 @@ $('f_k').innerHTML=kc(mode==='all'?'Promises logged':'Students who gave a date',
 var g={};L.forEach(function(x){(g[x.d.promise_date]=g[x.d.promise_date]||[]).push(x)});
 var row=function(n,A){var sm=function(f){return A.reduce(function(s,x){return s+f(x)},0)};return[n,A.length,fmt(sm(function(x){return x.st.at})),fmt(sm(function(x){return x.st.pd})),fmt(sm(function(x){return x.st.cur})),A.filter(function(x){return x.st.s==='paid'}).length]};
 tbl('f_d',['Promise date','Students','Pending at promise','Received since','Still pending','Paid in full'],Object.keys(g).sort().map(function(k){return row(k,g[k])}),L.length?row('Total',L):null);
-$('f_t').innerHTML=L.map(function(x){var r=x.r,d=x.d,s=SL[x.st.s];return'<tr><td>'+esc(r.Name)+'</td><td>'+esc(r.ID)+'</td><td>'+esc(r.Campus_Name)+'</td><td>'+esc(r.Batch)+'</td><td>'+esc(d.promise_date)+'</td><td>'+esc(d.reason)+'</td><td>'+fmt(x.st.at)+'</td><td class="bad">'+fmt(x.st.cur)+'</td><td>'+fmt(x.st.pd)+'</td><td><span class="b '+s[1]+'">'+s[0]+'</span></td><td>'+esc(d.note||'')+'</td><td>'+esc(d.by||'')+'</td><td><button class="btn g" data-id="'+esc(r.ID)+'" onclick="openD(this.dataset.id)">Open</button></td></tr>'}).join('')||'<tr><td colspan="13" class="sub">No promises found. Add a disposition from the Students page.</td></tr>'}
+$('f_t').innerHTML=L.map(function(x){var r=x.r,d=x.d,s=SL[x.st.s];return'<tr><td>'+esc(r.Name)+'</td><td>'+esc(r.ID)+'</td><td>'+esc(r.Campus_Name)+'</td><td>'+esc(r.Batch)+'</td><td>'+esc(d.promise_date)+'</td><td>'+esc(d.reason)+'</td><td>'+esc(d.header||'Overall')+'</td><td>'+fmt(x.st.at)+'</td><td class="bad">'+fmt(x.st.cur)+'</td><td>'+fmt(x.st.pd)+'</td><td><span class="b '+s[1]+'">'+s[0]+'</span></td><td>'+esc(d.note||'')+'</td><td>'+esc(d.by||'')+'</td><td><button class="btn g" data-id="'+esc(r.ID)+'" onclick="openD(this.dataset.id)">Open</button></td></tr>'}).join('')||'<tr><td colspan="14" class="sub">No promises found. Add a disposition from the Students page.</td></tr>'}
 
 var LS=[],LF=[];
 function dl(name,head,rows){var q=function(x){return '"'+String(x==null?'':x).replace(/"/g,'""')+'"'};var t=[head].concat(rows).map(function(r){return r.map(q).join(',')}).join('\n');var b=new Blob(['\ufeff'+t],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove()}
 function expS(){dl('students-disposition.csv',['Name','ID','Campus','Batch','Pending till date','Cur sem pending','Previous pending','Reason','Promise date','Note'],LS.map(function(r){var l=latest(r.ID)||{};return[r.Name,r.ID,r.Campus_Name,r.Batch,Math.round(num(r['Total Fee Pending Till Date'])),Math.round(r._ce),Math.round(num(r['Previous pending'])),l.reason||'',l.promise_date||'',l.note||'']}))}
-function expF(){dl('followups.csv',['Name','ID','Campus','Batch','Promise date','Reason','Pending then','Pending now','Paid since','Status','Note'],LF.map(function(x){return[x.r.Name,x.r.ID,x.r.Campus_Name,x.r.Batch,x.d.promise_date,x.d.reason,Math.round(x.st.at),Math.round(x.st.cur),Math.round(x.st.pd),SL[x.st.s][0],x.d.note||'']}))}
+function expF(){dl('followups.csv',['Name','ID','Campus','Batch','Promise date','Reason','Fee header','Pending then','Pending now','Paid since','Status','Note'],LF.map(function(x){return[x.r.Name,x.r.ID,x.r.Campus_Name,x.r.Batch,x.d.promise_date,x.d.reason,x.d.header||'Overall',Math.round(x.st.at),Math.round(x.st.cur),Math.round(x.st.pd),SL[x.st.s][0],x.d.note||'']}))}
 
 var EMB=[];
 if(EMB.length)load(EMB,'ALTA fee dump ('+EMB.length+' students). Upload a new CSV to refresh.');else load([],'Sign in to load data.');
