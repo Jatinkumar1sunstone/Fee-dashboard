@@ -133,7 +133,7 @@ var fmt=function(n){n=Math.round(n);return '₹'+(n>=1e7?(n/1e7).toFixed(2)+' Cr
 var $=function(i){return document.getElementById(i)};
 function sum(a,k){return a.reduce(function(s,r){return s+num(r[k])},0)}
 function group(a,k){var m={};a.forEach(function(r){var x=r[k]||'Not available';(m[x]=m[x]||[]).push(r)});return m}
-function cat(v){var s=String(v||'').trim().toLowerCase();if(!s||s==='na'||s==='n/a'||s.charAt(0)==='#'||s==='not available'||/^self[\s_-]*(pay)?$/.test(s))return 'Self Pay';if(/drcc|bihar/.test(s))return 'DRCC';if(/sunstone|gradquest|grayquest|grad quest|jodo|gyandhan|gyan dhan/.test(s))return 'Sunstone Loan';if(s==='student_interested')return 'Student interested';return 'Bank Loan'}
+function cat(v){var s=String(v||'').trim().toLowerCase();if(!s||s==='na'||s==='n/a'||s.charAt(0)==='#'||s==='not available'||s==='student_interested'||s==='student interested'||/^self[\s_-]*(pay)?$/.test(s))return 'Self Pay';if(/drcc|bihar/.test(s))return 'DRCC';if(/sunstone|gradquest|grayquest|grad quest|jodo|gyandhan|gyan dhan/.test(s))return 'Sunstone Loan';return 'Bank Loan'}
 function tbl(el,hd,rows,tot){var td=function(x,i,b){return '<td'+(i?' style="text-align:right"':'')+'>'+(b?'<b>'+x+'</b>':x)+'</td>'};
 $(el).innerHTML='<thead><tr>'+hd.map(function(x,i){return '<th'+(i?' style="text-align:right"':'')+'>'+x+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+r.map(function(x,i){return td(x,i)}).join('')+'</tr>'}).join('')+(tot?'<tr>'+tot.map(function(x,i){return td(x,i,1)}).join('')+'</tr>':'')+'</tbody>'}
 function bars(el,rows){var mx=Math.max.apply(null,rows.map(function(r){return r.a+r.b}).concat([1]));
@@ -158,7 +158,7 @@ var MT=function(el,first,g,order){tbl(el,[first,'Students'].concat(MH),order.map
 var cp=group(a,'Campus_Name');MT('cp','Campus',cp,Object.keys(cp).sort(function(x,y){return sum(cp[y],'Total Fee Pending')-sum(cp[x],'Total Fee Pending')}));
 var bg=group(a,'Batch');MT('bt2','Batch',bg,Object.keys(bg).sort());
 var lg=group(a.map(function(r){return Object.assign({},r,{LT:cat(r['Loan Partners'])})}),'LT');
-MT('ln','Loan type',lg,['Self Pay','Bank Loan','DRCC','Sunstone Loan','Student interested'].filter(function(n){return lg[n]}));
+MT('ln','Loan type',lg,['Self Pay','Bank Loan','DRCC','Sunstone Loan'].filter(function(n){return lg[n]}));
 var sh=['Batch'];for(var i=1;i<=8;i++)sh.push('Sem '+i+' pending');sh.push('Total pending');
 var brow=function(n,g){var r=[n];for(var i=1;i<=8;i++)r.push(fmt(sum(g,'Sem'+i+' Fee Pending')));r.push(fmt(sum(g,'Total Fee Pending')));return r};
 tbl('bs',sh,Object.keys(bg).sort().map(function(n){return brow(n,bg[n])}),brow('Total',a));hdrTable(a);cbTable(a);
