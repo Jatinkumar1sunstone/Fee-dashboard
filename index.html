@@ -133,7 +133,7 @@ var fmt=function(n){n=Math.round(n);return '₹'+(n>=1e7?(n/1e7).toFixed(2)+' Cr
 var $=function(i){return document.getElementById(i)};
 function sum(a,k){return a.reduce(function(s,r){return s+num(r[k])},0)}
 function group(a,k){var m={};a.forEach(function(r){var x=r[k]||'Not available';(m[x]=m[x]||[]).push(r)});return m}
-function cat(v){var s=String(v||'').trim().toLowerCase();if(!s||s==='na'||s==='n/a'||s==='not available')return 'Self Pay';if(/drcc|bihar/.test(s))return 'DRCC';if(/gradquest|grayquest|grad quest|jodo|gyandhan|gyan dhan/.test(s))return 'Sunstone Loan';if(s==='student_interested')return 'Student interested';return 'Bank Loan'}
+function cat(v){var s=String(v||'').trim().toLowerCase();if(!s||s==='na'||s==='n/a'||s.charAt(0)==='#'||s==='not available'||/^self[\s_-]*(pay)?$/.test(s))return 'Self Pay';if(/drcc|bihar/.test(s))return 'DRCC';if(/sunstone|gradquest|grayquest|grad quest|jodo|gyandhan|gyan dhan/.test(s))return 'Sunstone Loan';if(s==='student_interested')return 'Student interested';return 'Bank Loan'}
 function tbl(el,hd,rows,tot){var td=function(x,i,b){return '<td'+(i?' style="text-align:right"':'')+'>'+(b?'<b>'+x+'</b>':x)+'</td>'};
 $(el).innerHTML='<thead><tr>'+hd.map(function(x,i){return '<th'+(i?' style="text-align:right"':'')+'>'+x+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+r.map(function(x,i){return td(x,i)}).join('')+'</tr>'}).join('')+(tot?'<tr>'+tot.map(function(x,i){return td(x,i,1)}).join('')+'</tr>':'')+'</tbody>'}
 function bars(el,rows){var mx=Math.max.apply(null,rows.map(function(r){return r.a+r.b}).concat([1]));
@@ -171,15 +171,14 @@ function xd(v){var s=String(v==null?'':v).trim();if(/^\d{5}(\.\d+)?$/.test(s))re
 function maybeDump(rows,asOf){
   if(!rows.length||rows[0].uols_id===undefined)return rows;
   var td=asOf||today(),I={},S={},M={};
-  rows.forEach(function(r){var m=M[r.user_id]=M[r.user_id]||{},b=String(r.Admission_Year!==undefined?r.Admission_Year:r.Batch).trim(),n=r.Student_Name||r.Name;
-    if(r.Campus_Name&&!m.c)m.c=String(r.Campus_Name).trim();if(/^\d{4}$/.test(b)&&!m.b)m.b=b;if(n&&!m.n)m.n=n;if(r.Active_Status&&!m.s)m.s=r.Active_Status;
-    if(String(r.fee_belongs_to).trim()==='REFUND')return;
+  rows.forEach(function(r){var m=M[r.user_id]=M[r.user_id]||{},lp=r['Loan Partners'],b=String(r.Admission_Year!==undefined?r.Admission_Year:r.Batch).trim(),n=r.Student_Name||r.Name;
+    if(r.Campus_Name&&!m.c)m.c=String(r.Campus_Name).trim();if(/^\d{4}$/.test(b)&&!m.b)m.b=b;if(n&&!m.n)m.n=n;if(r.Active_Status&&!m.s)m.s=r.Active_Status;if(lp&&String(lp).trim()&&!m.l)m.l=String(lp).trim();
     var k=r.uols_id,x=I[k];
     if(!x)x=I[k]={u:r.user_id,h:String(r.installment_name||'').trim(),sem:parseInt(String(r.Term||'').replace(/\D/g,''))||0,due:num(r.post_amount),dl:xd(r.deadline),paid:0};
     x.paid+=num(r.paid_amount)});
   Object.keys(I).forEach(function(k){var x=I[k],m=M[x.u];if(!m.c||!m.b)return;/* students without campus/batch are not active students */
     var p=Math.max(0,Math.min(x.paid,x.due)),q=x.due-p,
-    o=S[x.u]=S[x.u]||{Batch:m.b,ID:x.u,Name:m.n||('User '+x.u),Campus_Name:m.c,Active_Status:m.s||'Active','Loan Partners':'','Total Fee':0,'Total Fee Paid':0,'Total Fee Pending':0,'Total Fee Till Date':0,'Total Fee Paid Till Date':0,'Total Fee Pending Till Date':0,'Previous pending':0,_I:[]};
+    o=S[x.u]=S[x.u]||{Batch:m.b,ID:x.u,Name:m.n||('User '+x.u),Campus_Name:m.c,Active_Status:m.s||'Active','Loan Partners':m.l||'','Total Fee':0,'Total Fee Paid':0,'Total Fee Pending':0,'Total Fee Till Date':0,'Total Fee Paid Till Date':0,'Total Fee Pending Till Date':0,'Previous pending':0,_I:[]};
     o._I.push({h:x.h,sem:x.sem,due:x.due,paid:p,dl:x.dl});o['Total Fee']+=x.due;o['Total Fee Paid']+=x.paid;
     if(x.dl&&x.dl<=td){o['Total Fee Till Date']+=x.due;o['Total Fee Paid Till Date']+=x.paid}
     if(x.sem>=1&&x.sem<=8){o['Sem'+x.sem+' Fee Paid']=(o['Sem'+x.sem+' Fee Paid']||0)+p;o['Sem'+x.sem+' Fee Pending']=(o['Sem'+x.sem+' Fee Pending']||0)+q}});
@@ -218,7 +217,7 @@ function stamp(){return new Date().toLocaleTimeString('en-IN',{hour:'2-digit',mi
 function postRaw(body,cb){fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)}).then(function(r){return r.text()}).then(function(t){var j;try{j=JSON.parse(t)}catch(e){cb({ok:false,err:'script error: '+t.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,180)});return}cb(j)}).catch(function(){cb({ok:false,err:'network'})})}
 function post(body,cb){var u='',p='';try{u=sessionStorage.getItem('user')||'';p=sessionStorage.getItem('pw')||''}catch(e){}body.email=u;body.pw=p;postRaw(body,cb)}
 function fetchData(quiet){post({action:'data'},function(j){if(!j.ok){$('src').textContent=quiet?'Refresh failed at '+stamp()+' ('+(j.err||'error')+'). Showing the last loaded data.':'Could not load data ('+(j.err||'error')+'). Check the Apps Script setup.';return}
-load(j.rows,'Live data · '+j.rows.length+' rows · '+SCOPE+' · updated '+stamp(),quiet)})}
+load(j.rows,'Live data · '+j.rows.length+' rows · '+SCOPE+' · updated '+stamp()+(j.skipped?' · '+j.skipped+' student(s) skipped: no campus/batch in the sheet':''),quiet)})}
 function refresh(){if(!API||document.body.classList.contains('locked'))return;fetchData(true);dLoad(function(){if(pg===2)drawS();if(pg===3)drawF()})}
 setInterval(refresh,REFRESH_MIN*60000);
 var YEARLY=['ADYPU','VGUJ'];/* these campuses charge fees yearly, not per semester */
