@@ -85,6 +85,17 @@ select,input{border-radius:10px}select:focus,input:focus{outline:2px solid var(-
 #k .c .l,#f_k .c .l{color:var(--mu)}#k .c .v,#f_k .c .v{color:var(--tx)}
 .b{font-weight:600}.b.g{background:#dcfce7;color:#15803d}.b.y{background:#fef3c7;color:#b45309}.b.r{background:#fee2e2;color:#b91c1c}.b.n{background:#dbeafe;color:#1d4ed8}
 #lg{background:linear-gradient(135deg,#0b1f4b,#0e7490 70%,#06b6d4)}
+.ms{position:relative;display:inline-block}
+.ms summary{list-style:none;cursor:pointer;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px 28px 8px 10px;font-size:13px;min-width:130px;position:relative;white-space:nowrap;color:var(--tx)}
+.ms summary::-webkit-details-marker{display:none}
+.ms summary::after{content:'\25BE';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--mu)}
+.ms[open] summary{outline:2px solid var(--cy)}
+.ms .mp{position:absolute;z-index:30;top:100%;left:0;margin-top:4px;background:#fff;border:1px solid var(--bd);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:6px;min-width:230px;max-height:300px;overflow:auto}
+.ms .mp label{display:flex;gap:8px;align-items:center;padding:5px 8px;font-size:13px;cursor:pointer;white-space:nowrap;border-radius:6px}
+.ms .mp label:hover{background:#f2fafd}.ms .mp input{margin:0}
+.ms .mp a{display:block;padding:4px 8px;font-size:12px;color:var(--cy);cursor:pointer;font-weight:600}
+.tw th{cursor:pointer;user-select:none}.tw th.asc::after{content:' \25B2';font-size:9px}.tw th.desc::after{content:' \25BC';font-size:9px}
+#s_n b{color:var(--tx)}
 </style></head><body class="locked"><div id="lg"><div class="box"><h2>Fees Dashboard</h2><div class="sub">Sign in with your email and password</div>
 <input id="em" type="email" placeholder="Email id" autocomplete="username"><input id="pw" type="password" placeholder="Password" autocomplete="current-password">
 <button class="btn" onclick="signin()">Sign in</button><div id="er"></div></div></div>
@@ -108,13 +119,13 @@ select,input{border-radius:10px}select:focus,input:focus{outline:2px solid var(-
 <div class="c"><div class="top" style="margin:0 0 8px"><h3 style="margin:0">Top pending students</h3><input id="q" placeholder="Search by name or ID"></div>
 <div class="tw"><table><thead><tr><th>Name</th><th>ID</th><th>Campus</th><th>Batch</th><th>Pending (till date)</th><th>Cur sem pending</th><th>Previous sem pending</th></tr></thead><tbody id="tb"></tbody></table></div></div></div>
 <div id="pg2" hidden>
-<div class="fl"><input id="s_q" placeholder="Search by name or ID" oninput="drawS()"><select id="s_c" onchange="drawS()"></select><select id="s_b" onchange="drawS()"></select>
-<select id="s_d" onchange="drawS()"><option value="">All students</option><option value="has">Disposition added</option><option value="none">No disposition yet</option></select>
-<select id="s_p" onchange="drawS()"><option value="due">Only students with pending fees</option><option value="all">All students</option></select></div>
+<div class="fl"><input id="s_q" placeholder="Search by name or ID" oninput="drawS()"><span id="s_c"></span><span id="s_b"></span><span id="s_r"></span><span id="s_h"></span>
+<span class="sub" style="align-self:center">Promise date:</span><input type="date" id="s_a" onchange="drawS()"><span class="sub" style="align-self:center">to</span><input type="date" id="s_e" onchange="drawS()">
+<select id="s_p" onchange="drawS()"><option value="due">Only students with pending fees</option><option value="all">All students</option></select><button class="btn g" onclick="clrS()">Clear filters</button></div>
 <div class="c"><div class="top" style="margin:0 0 6px"><div class="sub" id="s_n"></div><button class="btn adm" onclick="expS()">Export CSV</button></div><div class="tw"><table style="min-width:900px"><thead><tr><th>Name</th><th>ID</th><th>Campus</th><th>Batch</th><th>Pending till date</th><th>Cur sem pending</th><th>Previous pending</th><th>Latest disposition</th><th>Entries</th><th></th></tr></thead><tbody id="s_t"></tbody></table></div></div></div>
 <div id="pg3" hidden>
 <div class="fl"><span class="sub" style="align-self:center">Promise date:</span><input type="date" id="f_a" onchange="drawF()"><span class="sub" style="align-self:center">to</span><input type="date" id="f_b" onchange="drawF()">
-<select id="f_s" onchange="drawF()"><option value="">All statuses</option><option value="paid">Paid</option><option value="part">Partly paid</option><option value="np">Not paid yet (promise date upcoming)</option><option value="over">Not paid (promise date passed)</option></select><select id="f_c" onchange="drawF()"></select><select id="f_m" onchange="drawF()"><option value="latest">Latest promise per student / fee header</option><option value="all">All promises (full history)</option></select></div>
+<span id="f_s"></span><span id="f_c"></span><span id="f_r"></span><select id="f_m" onchange="drawF()"><option value="latest">Latest promise per student / fee header</option><option value="all">All promises (full history)</option></select></div>
 <div id="f_k"></div>
 <div class="c" style="margin-bottom:12px"><h3>Date-wise promises</h3><div class="tw"><table id="f_d" style="min-width:560px"></table></div></div>
 <div class="c"><div class="top" style="margin:0 0 8px"><h3 style="margin:0">What students promised</h3><button class="btn adm" onclick="expF()">Export CSV</button></div><div class="tw"><table style="min-width:1300px"><thead><tr><th>Name</th><th>ID</th><th>Campus</th><th>Batch</th><th>Promise date</th><th>Reason</th><th>Fee header</th><th>Pending (then)</th><th>Pending (now)</th><th>Paid since</th><th>Status</th><th>Note</th><th>Logged by</th><th></th></tr></thead><tbody id="f_t"></tbody></table></div></div></div>
@@ -127,7 +138,7 @@ select,input{border-radius:10px}select:focus,input:focus{outline:2px solid var(-
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
-var R=[],F={Campus_Name:'',Batch:'',Program_Name:''};
+var R=[],MS={oc:[],ob:[],op:[],sc:[],sb:[],sr:[],sh:[],fs:[],fc:[],fr:[]},F={Campus_Name:MS.oc,Batch:MS.ob,Program_Name:MS.op};
 var num=function(v){var n=parseFloat(String(v==null?'':v).replace(/[₹,\s]/g,''));return isNaN(n)?0:n};
 var fmt=function(n){n=Math.round(n);return '₹'+(n>=1e7?(n/1e7).toFixed(2)+' Cr':n>=1e5?(n/1e5).toFixed(2)+' L':n.toLocaleString('en-IN'))};
 var $=function(i){return document.getElementById(i)};
@@ -135,14 +146,43 @@ function sum(a,k){return a.reduce(function(s,r){return s+num(r[k])},0)}
 function group(a,k){var m={};a.forEach(function(r){var x=r[k]||'Not available';(m[x]=m[x]||[]).push(r)});return m}
 function cat(v){var s=String(v||'').trim().toLowerCase();if(!s||s==='na'||s==='n/a'||s.charAt(0)==='#'||s==='not available'||s==='student_interested'||s==='student interested'||/^self[\s_-]*(pay)?$/.test(s))return 'Self Pay';if(/drcc|bihar/.test(s))return 'DRCC';if(/sunstone|gradquest|grayquest|grad quest|jodo|gyandhan|gyan dhan/.test(s))return 'Sunstone Loan';return 'Bank Loan'}
 function tbl(el,hd,rows,tot){var td=function(x,i,b){return '<td'+(i?' style="text-align:right"':'')+'>'+(b?'<b>'+x+'</b>':x)+'</td>'};
-$(el).innerHTML='<thead><tr>'+hd.map(function(x,i){return '<th'+(i?' style="text-align:right"':'')+'>'+x+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+r.map(function(x,i){return td(x,i)}).join('')+'</tr>'}).join('')+(tot?'<tr>'+tot.map(function(x,i){return td(x,i,1)}).join('')+'</tr>':'')+'</tbody>'}
+$(el).innerHTML='<thead><tr>'+hd.map(function(x,i){return '<th'+(i?' style="text-align:right"':'')+'>'+x+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+r.map(function(x,i){return td(x,i)}).join('')+'</tr>'}).join('')+(tot?'<tr class="tot">'+tot.map(function(x,i){return td(x,i,1)}).join('')+'</tr>':'')+'</tbody>'}
 function bars(el,rows){var mx=Math.max.apply(null,rows.map(function(r){return r.a+r.b}).concat([1]));
 $(el).innerHTML=rows.map(function(r){var t=r.a+r.b;return '<div class="r"><div class="n" title="'+r.n+'">'+r.n+'</div><div><div class="bar" style="width:'+(t/mx*100)+'%"><i class="p" style="width:'+(r.a/(t||1)*100)+'%"></i><i class="q" style="flex:1"></i></div><div class="mu" style="font-size:11px;margin-top:2px">Total '+fmt(t)+' · Paid '+fmt(r.a)+' · Pending '+fmt(r.b)+'</div></div><div>'+Math.round(r.a/(t||1)*100)+'%</div></div>'}).join('')||'<div class="sub">No data</div>'}
 function single(el,rows){var mx=Math.max.apply(null,rows.map(function(r){return r.v}).concat([1]));
 $(el).innerHTML=rows.map(function(r){return '<div class="r"><div class="n" title="'+r.n+'">'+r.n+'</div><div class="bar"><i class="o" style="width:'+(r.v/mx*100)+'%"></i></div><div>'+fmt(r.v)+'</div></div>'}).join('')||'<div class="sub">No data</div>'}
-function build(){var h='';Object.keys(F).forEach(function(k){var vals=Array.from(new Set(R.map(function(r){return r[k]}).filter(Boolean))).sort();
-h+='<select onchange="F[\''+k+'\']=this.value;draw()"><option value="">All '+k.replace('_Name','').replace('_',' ')+'</option>'+vals.map(function(v){return '<option'+(F[k]===v?' selected':'')+'>'+v+'</option>'}).join('')+'</select>'});$('fl').innerHTML=h}
-function draw(){var a=R.filter(function(r){return Object.keys(F).every(function(k){return !F[k]||r[k]===F[k]})});
+/* ---- multi-select filters ---- */
+var MSLAB={},MSTXT={},MSCB={oc:function(){draw()},ob:function(){draw()},op:function(){draw()},sc:function(){drawS()},sb:function(){drawS()},sr:function(){drawS()},sh:function(){drawS()},fs:function(){drawF()},fc:function(){drawF()},fr:function(){drawF()}};
+function msText(id){var s=MS[id];return !s.length?MSLAB[id]:(s.length===1?(MSTXT[id][s[0]]||s[0]):MSLAB[id].replace(/^All /,'')+': '+s.length+' selected')}
+function msHtml(id,label,opts){var s=MS[id],L=opts.map(function(o){return Array.isArray(o)?o:[o,o]});MSLAB[id]=label;MSTXT[id]={};L.forEach(function(o){MSTXT[id][o[0]]=o[1]});
+  for(var i=s.length-1;i>=0;i--)if(!MSTXT[id].hasOwnProperty(s[i]))s.splice(i,1);
+  return '<details class="ms" data-id="'+id+'"><summary>'+esc(msText(id))+'</summary><div class="mp"><a onclick="msClear(\''+id+'\')">Clear</a>'+(L.length?L.map(function(o){return '<label><input type="checkbox" value="'+esc(o[0])+'"'+(s.indexOf(o[0])>-1?' checked':'')+' onchange="msTog(\''+id+'\',this)">'+esc(o[1])+'</label>'}).join(''):'<div class="sub" style="padding:6px 8px">No options</div>')+'</div></details>'}
+function msRefresh(id){var d=document.querySelector('details.ms[data-id="'+id+'"] summary');if(d)d.textContent=msText(id)}
+function msTog(id,el){var s=MS[id],i=s.indexOf(el.value);if(el.checked){if(i<0)s.push(el.value)}else if(i>-1)s.splice(i,1);msRefresh(id);MSCB[id]()}
+function msClear(id){MS[id].length=0;Array.prototype.forEach.call(document.querySelectorAll('details.ms[data-id="'+id+'"] input'),function(x){x.checked=false});msRefresh(id);MSCB[id]()}
+document.addEventListener('click',function(e){Array.prototype.forEach.call(document.querySelectorAll('details.ms[open]'),function(d){if(!d.contains(e.target))d.removeAttribute('open')})});
+/* ---- click a column heading to sort (ascending, then descending) ---- */
+var SORT={};
+function cellVal(td){var v=td.getAttribute('data-v'),t=(v!==null?v:td.textContent).trim(),s=t.replace(/[\u20B9,\s]/g,''),m=s.match(/^(-?\d+(?:\.\d+)?)(Cr|L)?%?$/);
+  if(m){var n=parseFloat(m[1]);if(m[2]==='Cr')n*=1e7;else if(m[2]==='L')n*=1e5;return n}return t.toLowerCase()}
+function applySort(t){var tb=t.tBodies[0];if(!tb)return;var key=t.id||tb.id,st=SORT[key];
+  Array.prototype.forEach.call(t.querySelectorAll('thead th'),function(th,i){th.classList.remove('asc','desc');if(st&&st.i===i)th.classList.add(st.d)});
+  if(!st)return;
+  Array.prototype.forEach.call(tb.querySelectorAll('tr.sp'),function(r){r.remove()});
+  Array.prototype.forEach.call(tb.querySelectorAll('button[onclick^="toggleSp"]'),function(b){b.innerHTML='Fee split &#9662;'});
+  var rows=Array.prototype.slice.call(tb.rows),tot=rows.filter(function(r){return r.classList.contains('tot')}),body=rows.filter(function(r){return !r.classList.contains('tot')&&r.cells.length>1}),dir=st.d==='asc'?1:-1;
+  body.sort(function(a,b){var x=cellVal(a.cells[st.i]),y=cellVal(b.cells[st.i]),xe=(x===''||x==='-'),ye=(y===''||y==='-');
+    if(xe||ye)return xe&&ye?0:(xe?1:-1);
+    if(typeof x==='number'&&typeof y==='number')return(x-y)*dir;if(typeof x==='number')return -1;if(typeof y==='number')return 1;
+    return x.localeCompare(y,undefined,{numeric:true})*dir});
+  body.concat(tot).forEach(function(r){tb.appendChild(r)})}
+function sortAll(){Array.prototype.forEach.call(document.querySelectorAll('.tw table'),applySort)}
+document.addEventListener('click',function(e){var th=e.target.closest&&e.target.closest('.tw th');if(!th||!th.textContent.trim())return;
+  var t=th.closest('table'),tb=t.tBodies[0],key=t.id||(tb&&tb.id);if(!key)return;var i=th.cellIndex,st=SORT[key];
+  SORT[key]={i:i,d:(st&&st.i===i&&st.d==='asc')?'desc':'asc'};applySort(t)});
+function build(){var u=function(k){return Array.from(new Set(R.map(function(r){return r[k]}).filter(Boolean))).sort()};
+$('fl').innerHTML=msHtml('oc','All Campus',u('Campus_Name'))+msHtml('ob','All Batch',u('Batch'))+msHtml('op','All Program',u('Program_Name'))}
+function draw(){var a=R.filter(function(r){return Object.keys(F).every(function(k){return !F[k].length||F[k].indexOf(r[k])>-1})});
 var kc=function(l,v){return '<div class="c"><div class="l">'+l+'</div><div class="v">'+v+'</div></div>'};
 var one=function(k){return fmt(sum(a,k))};
 var td=sum(a,'Total Fee Till Date'),pt=sum(a,'Total Fee Paid Till Date'),ov=sum(a,'Total Fee Pending Till Date');
@@ -164,7 +204,7 @@ var brow=function(n,g){var r=[n];for(var i=1;i<=8;i++)r.push(fmt(sum(g,'Sem'+i+'
 tbl('bs',sh,Object.keys(bg).sort().map(function(n){return brow(n,bg[n])}),brow('Total',a));hdrTable(a);cbTable(a);
 var t=$('q').value.toLowerCase();
 var top=a.filter(function(r){return num(r['Total Fee Pending Till Date'])>0&&(!t||(String(r.Name)+String(r.ID)).toLowerCase().indexOf(t)>-1)}).sort(function(x,y){return num(y['Total Fee Pending Till Date'])-num(x['Total Fee Pending Till Date'])}).slice(0,50);
-$('tb').innerHTML=top.map(function(r){return '<tr><td>'+(r.Name||'')+'</td><td>'+(r.ID||'')+'</td><td>'+(r.Campus_Name||'')+'</td><td>'+(r.Batch||'')+'</td><td class="bad">'+fmt(num(r['Total Fee Pending Till Date']))+'</td><td>'+fmt(r._ce)+'</td><td>'+fmt(num(r['Previous pending']))+'</td></tr>'}).join('')||'<tr><td colspan="7" class="sub">No students found</td></tr>'}
+$('tb').innerHTML=top.map(function(r){return '<tr><td>'+(r.Name||'')+'</td><td>'+(r.ID||'')+'</td><td>'+(r.Campus_Name||'')+'</td><td>'+(r.Batch||'')+'</td><td class="bad">'+fmt(num(r['Total Fee Pending Till Date']))+'</td><td>'+fmt(r._ce)+'</td><td>'+fmt(num(r['Previous pending']))+'</td></tr>'}).join('')||'<tr><td colspan="7" class="sub">No students found</td></tr>';sortAll()}
 function cs(b){var d=new Date(),s=(d.getFullYear()-num(b))*2+(d.getMonth()>=7?1:0);return Math.min(8,Math.max(1,s))}
 /* Fee dump (raw payment dump OR the installment-wise sheet export) -> one row per student. Runs only if rows have "uols_id". */
 function xd(v){var s=String(v==null?'':v).trim();if(/^\d{5}(\.\d+)?$/.test(s))return new Date(Date.UTC(1899,11,30)+Math.floor(parseFloat(s))*864e5).toISOString().slice(0,10);return s.slice(0,10)}
@@ -204,7 +244,7 @@ function hdrTable(a){var td=today(),M={},ORD=[];for(var i=1;i<=8;i++)ORD.push('S
   var T={d:0,p:0,dt:0,pt:0};
   var rows=L.map(function(m){T.d+=m.d;T.p+=m.p;T.dt+=m.dt;T.pt+=m.pt;return[m.g+' · Sem '+(m.sem||'-'),Object.keys(m.s).length,fmt(m.d),fmt(m.p),fmt(m.d-m.p),fmt(m.dt),fmt(m.pt),fmt(m.dt-m.pt)]});
   tbl('hd',['Fee header · Semester','Students','Total fee','Collected','Pending','Fee till date','Collected till date','Pending till date'],rows,['Total','',fmt(T.d),fmt(T.p),fmt(T.d-T.p),fmt(T.dt),fmt(T.pt),fmt(T.dt-T.pt)])}
-function load(rows,label,keep){rows=maybeDump(rows);rows=rows.filter(function(r){return r.ID&&r.Name&&r.ID!=='ID'&&String(r.Active_Status).trim().toLowerCase()==='active'});IDX={};rows.forEach(function(r){r.Batch=String(r.Batch==null?'':r.Batch).trim();r.Campus_Name=String(r.Campus_Name==null?'':r.Campus_Name).trim()});rows.forEach(splitYear);;rows.forEach(function(r){var c=cs(r.Batch);IDX[r.ID]=r;if(r._y){var pv=0;for(var k=1;k<c;k++)pv+=num(r['Sem'+k+' Fee Pending']);r['Previous pending']=pv}r._cp=num(r['Sem'+c+' Fee Paid']);r._ce=num(r['Sem'+c+' Fee Pending']);r._cf=r._cp+r._ce});R=rows;if(!keep)F={Campus_Name:'',Batch:'',Program_Name:''};$('src').textContent=label;build();draw();fillF();if(pg===2)drawS();if(pg===3)drawF()}
+function load(rows,label,keep){rows=maybeDump(rows);rows=rows.filter(function(r){return r.ID&&r.Name&&r.ID!=='ID'&&String(r.Active_Status).trim().toLowerCase()==='active'});IDX={};rows.forEach(function(r){r.Batch=String(r.Batch==null?'':r.Batch).trim();r.Campus_Name=String(r.Campus_Name==null?'':r.Campus_Name).trim()});rows.forEach(splitYear);;rows.forEach(function(r){var c=cs(r.Batch);IDX[r.ID]=r;if(r._y){var pv=0;for(var k=1;k<c;k++)pv+=num(r['Sem'+k+' Fee Pending']);r['Previous pending']=pv}r._cp=num(r['Sem'+c+' Fee Paid']);r._ce=num(r['Sem'+c+' Fee Pending']);r._cf=r._cp+r._ce});R=rows;if(!keep){MS.oc.length=0;MS.ob.length=0;MS.op.length=0}$('src').textContent=label;build();draw();fillF();if(pg===2)drawS();if(pg===3)drawF()}
 $('q').oninput=draw;
 $('f').onchange=function(e){var f=e.target.files[0];if(!f)return;Papa.parse(f,{header:true,skipEmptyLines:true,complete:function(r){load(r.data,f.name+' ('+r.data.length+' rows)')}})};
 function demo(){var C=['Delhi','Pune','Bangalore','Jaipur'],B=['2023','2024','2025'],P=['B.Tech CSE','BBA'],L=['None','Partner A','Partner B'],BK=['0','1-30 days','31-60 days','60+ days'],d=[];
@@ -236,8 +276,16 @@ function dSave(row,cb){if(!API){cb(false);return}post({action:'save',row:row},fu
 function latest(id){for(var i=DISP.length-1;i>=0;i--)if(String(DISP[i].id)===String(id))return DISP[i];return null}
 function hist(id){return DISP.filter(function(d){return String(d.id)===String(id)})}
 function go(n){pg=n;[1,2,3].forEach(function(i){$('pg'+i).hidden=i!==n;$('t'+i).classList.toggle('on',i===n)});if(n===2)drawS();if(n===3)drawF()}
-function opts(el,all,list){var cur=$(el).value;$(el).innerHTML='<option value="">'+all+'</option>'+list.map(function(v){return'<option>'+esc(v)+'</option>'}).join('');$(el).value=cur}
-function fillF(){var u=function(k){return Array.from(new Set(R.map(function(r){return r[k]}).filter(Boolean))).sort()};opts('s_c','All campuses',u('Campus_Name'));opts('s_b','All batches',u('Batch'));opts('f_c','All campuses',u('Campus_Name'))}
+var REASONS=['Promised to pay (gave a date)','Loan in process','Discussed with parents','Waiting for scholarship / refund','Not picking up calls','Refused to pay fees','Financial problem','Other'];
+function fillF(){var u=function(k){return Array.from(new Set(R.map(function(r){return r[k]}).filter(Boolean))).sort()};
+  $('s_c').innerHTML=msHtml('sc','All campuses',u('Campus_Name'));$('s_b').innerHTML=msHtml('sb','All batches',u('Batch'));
+  $('s_r').innerHTML=msHtml('sr','All dispositions',[['__none','No disposition yet']].concat(REASONS));
+  var hs={};R.forEach(function(r){(feeRows(r)||[]).forEach(function(x){hs[x.k]=1})});
+  $('s_h').innerHTML=msHtml('sh','All fee headers',[['Overall','Overall (whole student)']].concat(Object.keys(hs).sort(function(a,b){return a.localeCompare(b,undefined,{numeric:true})})));
+  $('f_c').innerHTML=msHtml('fc','All campuses',u('Campus_Name'));
+  $('f_s').innerHTML=msHtml('fs','All statuses',[['paid','Paid'],['part','Partly paid'],['np','Not paid yet (promise date upcoming)'],['over','Not paid (promise date passed)']]);
+  $('f_r').innerHTML=msHtml('fr','All dispositions',REASONS)}
+function clrS(){['sc','sb','sr','sh'].forEach(function(k){MS[k].length=0});$('s_q').value='';$('s_a').value='';$('s_e').value='';$('s_p').value='due';fillF();drawS()}
 /* Per-student fee header-wise split (installments due till date; Year split into 2 semesters 50/50) */
 function feeRows(r){if(!r||!r._I)return null;var td=today(),L=[],add=function(h,s,d,p){if(d>0)L.push({h:h,s:s,d:d,p:p,q:Math.max(0,d-p),k:h+' · Sem '+(s||'-')})};
   r._I.forEach(function(x){if(!x.dl||x.dl>td)return;
@@ -254,12 +302,25 @@ function feeBreak(r){var L=feeRows(r);if(!L)return '<div class="sub">Header-wise
    '<tr style="font-weight:700;background:#eef6fb"><td>Total</td><td '+R_+'>'+N(T.d)+'</td><td '+R_+'>'+N(T.p)+'</td><td '+R_+'>'+N(T.q)+'</td><td '+R_+'>100%</td><td></td><td></td></tr></tbody></table>'}
 function toggleSp(b){var tr=b.closest('tr'),nx=tr.nextElementSibling;if(nx&&nx.className==='sp'){nx.remove();b.textContent='Fee split \u25BE';return}
   var t=document.createElement('tr');t.className='sp';t.innerHTML='<td colspan="10" style="white-space:normal;background:#f8fbfe;padding:10px 16px">'+feeBreak(IDX[b.dataset.id])+'</td>';tr.after(t);b.textContent='Fee split \u25B4'}
-function drawS(){var CNT={};DISP.forEach(function(d){var k=String(d.id);CNT[k]=(CNT[k]||0)+1});var q=$('s_q').value.toLowerCase(),c=$('s_c').value,b=$('s_b').value,m=$('s_d').value,pp=$('s_p').value;
-var a=R.filter(function(r){var l=latest(r.ID);return(!c||r.Campus_Name===c)&&(!b||r.Batch===b)&&(!q||(String(r.Name)+String(r.ID)).toLowerCase().indexOf(q)>-1)&&(pp==='all'||num(r['Total Fee Pending Till Date'])>0)&&(m!=='has'||l)&&(m!=='none'||!l)});
+function drawS(){var CNT={},E={};DISP.forEach(function(d){var k=String(d.id);CNT[k]=(CNT[k]||0)+1;(E[k]=E[k]||{})[d.header||'']=d});
+var q=$('s_q').value.toLowerCase(),pp=$('s_p').value,a0=$('s_a').value,b0=$('s_e').value,sc=MS.sc,sb=MS.sb,sr=MS.sr,sh=MS.sh,
+  real=sr.filter(function(x){return x!=='__none'}),none=sr.indexOf('__none')>-1,act=sr.length||sh.length||a0||b0,amt=0,a=[];
+R.forEach(function(r){
+  if(sc.length&&sc.indexOf(r.Campus_Name)<0)return;if(sb.length&&sb.indexOf(r.Batch)<0)return;
+  if(q&&(String(r.Name)+String(r.ID)).toLowerCase().indexOf(q)<0)return;
+  if(pp!=='all'&&!(num(r['Total Fee Pending Till Date'])>0))return;
+  var em=E[String(r.ID)]||{},ents=Object.keys(em).map(function(k){return em[k]}),pend=num(r['Total Fee Pending Till Date']);
+  if(act){
+    var hit=ents.filter(function(e){return(!sr.length||real.indexOf(e.reason)>-1)&&(!sh.length||sh.indexOf(e.header||'Overall')>-1)&&(!a0||(e.promise_date&&String(e.promise_date)>=a0))&&(!b0||(e.promise_date&&String(e.promise_date)<=b0))}),
+      viaNone=none&&!ents.length&&!a0&&!b0&&!sh.length;
+    if(!hit.length&&!viaNone)return;
+    if(viaNone||hit.some(function(e){return !e.header}))amt+=pend;else{var seen={};hit.forEach(function(e){if(!seen[e.header]){seen[e.header]=1;amt+=hdrPend(r,e.header)}})}
+  }else amt+=pend;
+  a.push(r)});
 a.sort(function(x,y){return num(y['Total Fee Pending Till Date'])-num(x['Total Fee Pending Till Date'])});
-LS=a;$('s_n').textContent=a.length+' students'+(a.length>200?' (showing top 200, use filters)':'');
-$('s_t').innerHTML=a.slice(0,200).map(function(r){var l=latest(r.ID),ds=l?'<b>'+esc(l.reason)+'</b>'+(l.header?' <span class="mu">('+esc(l.header)+')</span>':'')+(l.promise_date?' &middot; '+esc(l.promise_date):''):'<span class="mu">-</span>';
-return'<tr><td>'+esc(r.Name)+'</td><td>'+esc(r.ID)+'</td><td>'+esc(r.Campus_Name)+'</td><td>'+esc(r.Batch)+'</td><td class="bad">'+fmt(num(r['Total Fee Pending Till Date']))+'</td><td>'+fmt(r._ce)+'</td><td>'+fmt(num(r['Previous pending']))+'</td><td>'+ds+((CNT[String(r.ID)]||0)>1?' <span class="mu">(+'+((CNT[String(r.ID)]||0)-1)+' earlier)</span>':'')+'</td><td>'+(CNT[String(r.ID)]?'<button class="btn g" style="padding:2px 9px;font-size:11px" data-id="'+esc(r.ID)+'" onclick="openD(this.dataset.id)">'+CNT[String(r.ID)]+'</button>':0)+'</td><td><button class="btn g" data-id="'+esc(r.ID)+'" onclick="toggleSp(this)">Fee split &#9662;</button> <button class="btn" data-id="'+esc(r.ID)+'" onclick="openD(this.dataset.id)">'+(l?'History / Add':'Add')+'</button></td></tr>'}).join('')||'<tr><td colspan="10" class="sub">No students found</td></tr>'}
+LS=a;$('s_n').innerHTML='<b>'+a.length+'</b> students · Amount to collect: <b class="bad">'+fmt(amt)+'</b>'+(act?' <span class="mu">(pending of the matching dispositions)</span>':' <span class="mu">(pending till date)</span>')+(a.length>1000?' · showing top 1000, use filters':'');
+$('s_t').innerHTML=a.slice(0,1000).map(function(r){var l=latest(r.ID),n=CNT[String(r.ID)]||0,ds=l?'<b>'+esc(l.reason)+'</b>'+(l.header?' <span class="mu">('+esc(l.header)+')</span>':'')+(l.promise_date?' &middot; '+esc(l.promise_date):''):'<span class="mu">-</span>';
+  return'<tr><td>'+esc(r.Name)+'</td><td>'+esc(r.ID)+'</td><td>'+esc(r.Campus_Name)+'</td><td>'+esc(r.Batch)+'</td><td class="bad">'+fmt(num(r['Total Fee Pending Till Date']))+'</td><td>'+fmt(r._ce)+'</td><td>'+fmt(num(r['Previous pending']))+'</td><td data-v="'+esc(l&&l.promise_date||'')+'">'+ds+(n>1?' <span class="mu">(+'+(n-1)+' earlier)</span>':'')+'</td><td>'+(n?'<button class="btn g" style="padding:2px 9px;font-size:11px" data-id="'+esc(r.ID)+'" onclick="openD(this.dataset.id)">'+n+'</button>':0)+'</td><td><button class="btn g" data-id="'+esc(r.ID)+'" onclick="toggleSp(this)">Fee split &#9662;</button> <button class="btn" data-id="'+esc(r.ID)+'" onclick="openD(this.dataset.id)">'+(l?'History / Add':'Add')+'</button></td></tr>'}).join('')||'<tr><td colspan="10" class="sub">No students found</td></tr>';sortAll()}
 function renderHist(id){var h=hist(id).slice().reverse(),n=h.length;$('m_hn').textContent=n?' ('+n+')':'';
 $('m_h').innerHTML=n?h.map(function(d,i){var pt=(d.pending_at_time===''||d.pending_at_time==null)?'':'Pending then '+fmt(num(d.pending_at_time)),l2=[d.promise_date?'Promise date: <b>'+esc(d.promise_date)+'</b>':'',pt].filter(Boolean).join(' · ');
 return'<div class="hh"><div><span class="b n">#'+(n-i)+'</span> <b>'+esc(d.reason)+'</b> <span class="b y">'+esc(d.header||'Overall')+'</span></div>'+(l2?'<div>'+l2+'</div>':'')+(d.note?'<div>'+esc(d.note)+'</div>':'')+'<div class="mu">'+new Date(Number(d.ts)).toLocaleString('en-IN')+(d.by?' · '+esc(d.by):'')+'</div></div>'}).join(''):'<div class="mu">No dispositions yet</div>'}
@@ -273,10 +334,10 @@ var row={ts:Date.now(),id:r.ID,name:r.Name,campus:r.Campus_Name,batch:r.Batch,re
 $('m_s').disabled=true;dSave(row,function(ok){$('m_s').disabled=false;if(!ok){$('m_e').textContent='Could not save. Check your internet or the Apps Script link.';return}$('m_r').value='';$('m_n').value='';$('m_d').value='';var fin=function(){var kept=DISP.some(function(d){return Number(d.ts)===row.ts});if(!kept){$('m_e').style.color='var(--bad)';$('m_e').textContent='The server did not keep this entry. Check the Apps Script deployment (New version) and the Dispositions tab.'}else{var n=hist(CUR).length;$('m_e').style.color='var(--ok)';$('m_e').textContent='Saved. '+n+' entr'+(n==1?'y':'ies')+' stored for this student. You can add another.'}renderHist(CUR);$('m_b').innerHTML=feeBreak(IDX[CUR]);if(pg===2)drawS();if(pg===3)drawF()};if(API)dLoad(fin);else fin()})}
 var SL={paid:['Paid','g'],part:['Partly paid','y'],np:['Not paid yet','n'],over:['Not paid, date passed','r']};
 function stat(r,d){var cur=d.header?hdrPend(r,d.header):num(r['Total Fee Pending Till Date']),at=num(d.pending_at_time),pd=Math.max(0,at-cur);return{cur:cur,at:at,pd:pd,s:cur<=0?'paid':pd>0?'part':(String(d.promise_date)<today()?'over':'np')}}
-function drawF(){var a0=$('f_a').value,b0=$('f_b').value,sf=$('f_s').value,cf=$('f_c').value,L=[];
+function drawF(){var a0=$('f_a').value,b0=$('f_b').value,sf=MS.fs,cf=MS.fc,fr=MS.fr,L=[];
 var mode=$('f_m').value,P=[];
 if(mode==='all'){DISP.forEach(function(d){var r=IDX[d.id];if(r)P.push({r:r,d:d})})}else{var LM={};DISP.forEach(function(d){LM[d.id+'|'+(d.header||'')]=d});Object.keys(LM).forEach(function(k){var d=LM[k],r=IDX[d.id];if(r)P.push({r:r,d:d})})}
-P.forEach(function(x){var r=x.r,d=x.d;if(!d.promise_date)return;var pd=String(d.promise_date);if(a0&&pd<a0)return;if(b0&&pd>b0)return;if(cf&&r.Campus_Name!==cf)return;var st=stat(r,d);if(sf&&st.s!==sf)return;L.push({r:r,d:d,st:st})});
+P.forEach(function(x){var r=x.r,d=x.d;if(!d.promise_date)return;var pd=String(d.promise_date);if(a0&&pd<a0)return;if(b0&&pd>b0)return;if(cf.length&&cf.indexOf(r.Campus_Name)<0)return;if(fr.length&&fr.indexOf(d.reason)<0)return;var st=stat(r,d);if(sf.length&&sf.indexOf(st.s)<0)return;L.push({r:r,d:d,st:st})});
 L.sort(function(x,y){return String(x.d.promise_date).localeCompare(String(y.d.promise_date))||y.st.cur-x.st.cur});
 LF=L;var S=function(f){return L.reduce(function(s,x){return s+f(x)},0)},full=L.filter(function(x){return x.st.s==='paid'}).length;
 var kc=function(l,v){return'<div class="c"><div class="l">'+l+'</div><div class="v">'+v+'</div></div>'};
@@ -284,7 +345,7 @@ $('f_k').innerHTML=kc(mode==='all'?'Promises logged':'Students who gave a date',
 var g={};L.forEach(function(x){(g[x.d.promise_date]=g[x.d.promise_date]||[]).push(x)});
 var row=function(n,A){var sm=function(f){return A.reduce(function(s,x){return s+f(x)},0)};return[n,A.length,fmt(sm(function(x){return x.st.at})),fmt(sm(function(x){return x.st.pd})),fmt(sm(function(x){return x.st.cur})),A.filter(function(x){return x.st.s==='paid'}).length]};
 tbl('f_d',['Promise date','Students','Pending at promise','Received since','Still pending','Paid in full'],Object.keys(g).sort().map(function(k){return row(k,g[k])}),L.length?row('Total',L):null);
-$('f_t').innerHTML=L.map(function(x){var r=x.r,d=x.d,s=SL[x.st.s];return'<tr><td>'+esc(r.Name)+'</td><td>'+esc(r.ID)+'</td><td>'+esc(r.Campus_Name)+'</td><td>'+esc(r.Batch)+'</td><td>'+esc(d.promise_date)+'</td><td>'+esc(d.reason)+'</td><td>'+esc(d.header||'Overall')+'</td><td>'+fmt(x.st.at)+'</td><td class="bad">'+fmt(x.st.cur)+'</td><td>'+fmt(x.st.pd)+'</td><td><span class="b '+s[1]+'">'+s[0]+'</span></td><td>'+esc(d.note||'')+'</td><td>'+esc(d.by||'')+'</td><td><button class="btn g" data-id="'+esc(r.ID)+'" onclick="openD(this.dataset.id)">Open</button></td></tr>'}).join('')||'<tr><td colspan="14" class="sub">No promises found. Add a disposition from the Students page.</td></tr>'}
+$('f_t').innerHTML=L.map(function(x){var r=x.r,d=x.d,s=SL[x.st.s];return'<tr><td>'+esc(r.Name)+'</td><td>'+esc(r.ID)+'</td><td>'+esc(r.Campus_Name)+'</td><td>'+esc(r.Batch)+'</td><td>'+esc(d.promise_date)+'</td><td>'+esc(d.reason)+'</td><td>'+esc(d.header||'Overall')+'</td><td>'+fmt(x.st.at)+'</td><td class="bad">'+fmt(x.st.cur)+'</td><td>'+fmt(x.st.pd)+'</td><td><span class="b '+s[1]+'">'+s[0]+'</span></td><td>'+esc(d.note||'')+'</td><td>'+esc(d.by||'')+'</td><td><button class="btn g" data-id="'+esc(r.ID)+'" onclick="openD(this.dataset.id)">Open</button></td></tr>'}).join('')||'<tr><td colspan="14" class="sub">No promises found. Add a disposition from the Students page.</td></tr>';sortAll()}
 
 var LS=[],LF=[];
 function dl(name,head,rows){var q=function(x){return '"'+String(x==null?'':x).replace(/"/g,'""')+'"'};var t=[head].concat(rows).map(function(r){return r.map(q).join(',')}).join('\n');var b=new Blob(['\ufeff'+t],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove()}
