@@ -96,7 +96,17 @@ select,input{border-radius:10px}select:focus,input:focus{outline:2px solid var(-
 .ms .mp a{display:block;padding:4px 8px;font-size:12px;color:var(--cy);cursor:pointer;font-weight:600}
 .tw th{cursor:pointer;user-select:none}.tw th.asc::after{content:' \25B2';font-size:9px}.tw th.desc::after{content:' \25BC';font-size:9px}
 #s_n b{color:var(--tx)}
-</style></head><body class="locked"><div id="lg"><div class="box"><h2>Fees Dashboard</h2><div class="sub">Sign in with your email and password</div>
+
+/* loader */
+#ld{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(244,247,251,.88);backdrop-filter:blur(3px)}
+#ld .spin{width:46px;height:46px;border:5px solid #e3e9f2;border-top-color:var(--cy);border-radius:50%;animation:ldspin .8s linear infinite}
+#ld .pbar{width:240px;height:8px;background:#e3e9f2;border-radius:6px;overflow:hidden}
+#ld .pbar i{display:block;height:100%;width:0;background:var(--cy);transition:width .35s ease}
+#ld .pt{font-weight:700;color:var(--tx)}#ld .pm{color:var(--mu);font-size:13px}
+@keyframes ldspin{to{transform:rotate(360deg)}}
+</style></head><body class="locked">
+<div id="ld"><div class="spin"></div><div class="pbar"><i id="ldb"></i></div><div class="pt" id="ldp">0%</div><div class="pm" id="ldm">Loading...</div></div>
+<div id="lg"><div class="box"><h2>Fees Dashboard</h2><div class="sub">Sign in with your email and password</div>
 <input id="em" type="email" placeholder="Email id" autocomplete="username"><input id="pw" type="password" placeholder="Password" autocomplete="current-password">
 <button class="btn" onclick="signin()">Sign in</button><div id="er"></div></div></div>
 <div class="w">
@@ -256,9 +266,14 @@ var REFRESH_MIN=5,SCOPE='';/* data refreshes automatically every 5 minutes */
 function stamp(){return new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}
 function postRaw(body,cb){fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)}).then(function(r){return r.text()}).then(function(t){var j;try{j=JSON.parse(t)}catch(e){cb({ok:false,err:'script error: '+t.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,180)});return}cb(j)}).catch(function(){cb({ok:false,err:'network'})})}
 function post(body,cb){var u='',p='';try{u=sessionStorage.getItem('user')||'';p=sessionStorage.getItem('pw')||''}catch(e){}body.email=u;body.pw=p;postRaw(body,cb)}
-function fetchData(quiet){post({action:'data'},function(j){if(!j.ok){$('src').textContent=quiet?'Refresh failed at '+stamp()+' ('+(j.err||'error')+'). Showing the last loaded data.':'Could not load data ('+(j.err||'error')+'). Check the Apps Script setup.';return}
-load(j.rows,'Live data · '+j.rows.length+' rows · '+SCOPE+' · updated '+stamp()+(j.skipped?' · '+j.skipped+' student(s) skipped: no campus/batch in the sheet':''),quiet)})}
-function refresh(){if(!API||document.body.classList.contains('locked'))return;fetchData(true);dLoad(function(){if(pg===2)drawS();if(pg===3)drawF()})}
+function fetchData(quiet,done){post({action:'data'},function(j){
+  if(!j.ok){$('src').textContent=quiet?'Refresh failed at '+stamp()+' ('+(j.err||'error')+'). Showing the last loaded data.':'Could not load data ('+(j.err||'error')+'). Check the Apps Script setup.';if(done)done();return}
+  load(j.rows,'Live data · '+j.rows.length+' rows · '+SCOPE+' · updated '+stamp()+(j.skipped?' · '+j.skipped+' student(s) skipped: no campus/batch in the sheet':''),quiet);
+  if(done)done()})}
+function refresh(){if(!API||document.body.classList.contains('locked'))return;
+  ldBegin(2,'Data refresh ho raha hai...');
+  fetchData(true,ldStep);
+  dLoad(function(){if(pg===2)drawS();if(pg===3)drawF();ldStep()})}
 setInterval(refresh,REFRESH_MIN*60000);
 var YEARLY=['ADYPU','VGUJ'];/* these campuses charge fees yearly, not per semester */
 function splitYear(r){if(YEARLY.indexOf(String(r.Campus_Name).trim().toUpperCase())<0)return;
@@ -352,6 +367,14 @@ function dl(name,head,rows){var q=function(x){return '"'+String(x==null?'':x).re
 function expS(){dl('students-disposition.csv',['Name','ID','Campus','Batch','Pending till date','Cur sem pending','Previous pending','Reason','Promise date','Note'],LS.map(function(r){var l=latest(r.ID)||{};return[r.Name,r.ID,r.Campus_Name,r.Batch,Math.round(num(r['Total Fee Pending Till Date'])),Math.round(r._ce),Math.round(num(r['Previous pending'])),l.reason||'',l.promise_date||'',l.note||'']}))}
 function expF(){dl('followups.csv',['Name','ID','Campus','Batch','Promise date','Reason','Fee header','Pending then','Pending now','Paid since','Status','Note'],LF.map(function(x){return[x.r.Name,x.r.ID,x.r.Campus_Name,x.r.Batch,x.d.promise_date,x.d.reason,x.d.header||'Overall',Math.round(x.st.at),Math.round(x.st.cur),Math.round(x.st.pd),SL[x.st.s][0],x.d.note||'']}))}
 
+/* ---- loader ---- */
+var LD={t:0,d:0,timer:null};
+function ldSet(p){$('ldb').style.width=p+'%';$('ldp').textContent=Math.round(p)+'%'}
+function ldBegin(total,msg){LD.t=total;LD.d=0;$('ldm').textContent=msg||'Loading data...';ldSet(5);$('ld').style.display='flex';
+  clearTimeout(LD.timer);LD.timer=setTimeout(ldEnd,60000)}/* safety: 60s baad apne aap hat jaye */
+function ldStep(){LD.d++;ldSet(Math.min(100,LD.d/LD.t*100));if(LD.d>=LD.t){setTimeout(ldEnd,250)}}
+function ldEnd(){clearTimeout(LD.timer);$('ld').style.display='none'}
+
 var EMB=[];
 if(EMB.length)load(EMB,'ALTA fee dump ('+EMB.length+' students). Upload a new CSV to refresh.');else load([],'Sign in to load data.');
 </script><script>
@@ -359,7 +382,9 @@ var ROLE='viewer';
 function unlock(j,e){ROLE=j.role;SCOPE=j.scope;document.body.classList.remove('locked');document.getElementById('lg').style.display='none';
 document.getElementById('who').textContent=e+' ('+(ROLE==='admin'?'Admin':'Viewer')+' · '+j.scope+')';
 if(ROLE!=='admin')Array.prototype.forEach.call(document.querySelectorAll('.adm'),function(x){x.hidden=true});
-fetchData(false);dLoad(function(){if(pg===2)drawS();if(pg===3)drawF()})}
+ldBegin(2,'Data load ho raha hai...');
+fetchData(false,ldStep);
+dLoad(function(){if(pg===2)drawS();if(pg===3)drawF();ldStep()})}
 function signin(){var e=document.getElementById('em').value.trim().toLowerCase(),p=document.getElementById('pw').value,er=document.getElementById('er');
 if(!API){er.textContent='Setup is not finished: the Apps Script link (API) is missing.';return}
 er.textContent='Signing in...';
