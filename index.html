@@ -368,12 +368,19 @@ function expS(){dl('students-disposition.csv',['Name','ID','Campus','Batch','Pen
 function expF(){dl('followups.csv',['Name','ID','Campus','Batch','Promise date','Reason','Fee header','Pending then','Pending now','Paid since','Status','Note'],LF.map(function(x){return[x.r.Name,x.r.ID,x.r.Campus_Name,x.r.Batch,x.d.promise_date,x.d.reason,x.d.header||'Overall',Math.round(x.st.at),Math.round(x.st.cur),Math.round(x.st.pd),SL[x.st.s][0],x.d.note||'']}))}
 
 /* ---- loader ---- */
-var LD={t:0,d:0,timer:null};
-function ldSet(p){$('ldb').style.width=p+'%';$('ldp').textContent=Math.round(p)+'%'}
-function ldBegin(total,msg){LD.t=total;LD.d=0;$('ldm').textContent=msg||'Loading data...';ldSet(5);$('ld').style.display='flex';
-  clearTimeout(LD.timer);LD.timer=setTimeout(ldEnd,60000)}/* safety: 60s baad apne aap hat jaye */
-function ldStep(){LD.d++;ldSet(Math.min(100,LD.d/LD.t*100));if(LD.d>=LD.t){setTimeout(ldEnd,250)}}
-function ldEnd(){clearTimeout(LD.timer);$('ld').style.display='none'}
+var LD={t:0,d:0,p:0,msg:'',iv:null,timer:null,hide:null};
+function ldMsg(p){return p>=100?'Aagya data':p>=90?'Bs ho gya':p>=75?'Almost ho gaya yaar thoda sa aur':p>=50?'Thoda sa aur wait karlo data ho rha hai load':LD.msg}
+function ldSet(p){LD.p=p;$('ldb').style.width=p+'%';$('ldp').textContent=Math.round(p)+'%';$('ldm').textContent=ldMsg(p)}
+function ldBegin(total,msg){LD.t=total;LD.d=0;LD.msg=msg||'Data load ho raha hai...';
+  clearInterval(LD.iv);clearTimeout(LD.timer);clearTimeout(LD.hide);
+  ldSet(5);$('ld').style.display='flex';
+  /* progress dheere dheere 92% tak badhta hai, 100% tabhi jab data aa jaye */
+  LD.iv=setInterval(function(){if(LD.p<92)ldSet(LD.p+Math.max(0.4,(92-LD.p)*0.08))},300);
+  LD.timer=setTimeout(ldEnd,60000)}/* safety: 60s baad apne aap hat jaye */
+function ldStep(){LD.d++;
+  if(LD.d>=LD.t){clearInterval(LD.iv);ldSet(100);clearTimeout(LD.hide);LD.hide=setTimeout(ldEnd,900)}
+  else ldSet(Math.max(LD.p,LD.d/LD.t*100))}
+function ldEnd(){clearInterval(LD.iv);clearTimeout(LD.timer);clearTimeout(LD.hide);$('ld').style.display='none'}
 
 var EMB=[];
 if(EMB.length)load(EMB,'ALTA fee dump ('+EMB.length+' students). Upload a new CSV to refresh.');else load([],'Sign in to load data.');
