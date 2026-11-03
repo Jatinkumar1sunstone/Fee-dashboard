@@ -148,7 +148,7 @@ select,input{border-radius:10px}select:focus,input:focus{outline:2px solid var(-
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
-var R=[],MS={oc:[],ob:[],op:[],sc:[],sb:[],sr:[],sh:[],fs:[],fc:[],fr:[]},F={Campus_Name:MS.oc,Batch:MS.ob,Program_Name:MS.op};
+var R=[],MS={ov:[],oc:[],ob:[],op:[],sc:[],sb:[],sr:[],sh:[],fs:[],fc:[],fr:[]},F={Campus_Name:MS.oc,Batch:MS.ob,Program_Name:MS.op};
 var num=function(v){var n=parseFloat(String(v==null?'':v).replace(/[₹,\s]/g,''));return isNaN(n)?0:n};
 var fmt=function(n){n=Math.round(n);return '₹'+(n>=1e7?(n/1e7).toFixed(2)+' Cr':n>=1e5?(n/1e5).toFixed(2)+' L':n.toLocaleString('en-IN'))};
 var $=function(i){return document.getElementById(i)};
@@ -162,7 +162,7 @@ $(el).innerHTML=rows.map(function(r){var t=r.a+r.b;return '<div class="r"><div c
 function single(el,rows){var mx=Math.max.apply(null,rows.map(function(r){return r.v}).concat([1]));
 $(el).innerHTML=rows.map(function(r){return '<div class="r"><div class="n" title="'+r.n+'">'+r.n+'</div><div class="bar"><i class="o" style="width:'+(r.v/mx*100)+'%"></i></div><div>'+fmt(r.v)+'</div></div>'}).join('')||'<div class="sub">No data</div>'}
 /* ---- multi-select filters ---- */
-var MSLAB={},MSTXT={},MSCB={oc:function(){draw()},ob:function(){draw()},op:function(){draw()},sc:function(){drawS()},sb:function(){drawS()},sr:function(){drawS()},sh:function(){drawS()},fs:function(){drawF()},fc:function(){drawF()},fr:function(){drawF()}};
+var MSLAB={},MSTXT={},MSCB={ov:function(){reloadVF()},oc:function(){draw()},ob:function(){draw()},op:function(){draw()},sc:function(){drawS()},sb:function(){drawS()},sr:function(){drawS()},sh:function(){drawS()},fs:function(){drawF()},fc:function(){drawF()},fr:function(){drawF()}};
 function msText(id){var s=MS[id];return !s.length?MSLAB[id]:(s.length===1?(MSTXT[id][s[0]]||s[0]):MSLAB[id].replace(/^All /,'')+': '+s.length+' selected')}
 function msHtml(id,label,opts){var s=MS[id],L=opts.map(function(o){return Array.isArray(o)?o:[o,o]});MSLAB[id]=label;MSTXT[id]={};L.forEach(function(o){MSTXT[id][o[0]]=o[1]});
   for(var i=s.length-1;i>=0;i--)if(!MSTXT[id].hasOwnProperty(s[i]))s.splice(i,1);
@@ -191,7 +191,9 @@ document.addEventListener('click',function(e){var th=e.target.closest&&e.target.
   var t=th.closest('table'),tb=t.tBodies[0],key=t.id||(tb&&tb.id);if(!key)return;var i=th.cellIndex,st=SORT[key];
   SORT[key]={i:i,d:(st&&st.i===i&&st.d==='asc')?'desc':'asc'};applySort(t)});
 function build(){var u=function(k){return Array.from(new Set(R.map(function(r){return r[k]}).filter(Boolean))).sort()};
-$('fl').innerHTML=msHtml('oc','All Campus',u('Campus_Name'))+msHtml('ob','All Batch',u('Batch'))+msHtml('op','All Program',u('Program_Name'))}
+var op=document.querySelector('#fl details[open]'),oid=op&&op.dataset.id;
+$('fl').innerHTML=msHtml('oc','All Campus',u('Campus_Name'))+msHtml('ob','All Batch',u('Batch'))+msHtml('op','All Program',u('Program_Name'))+msHtml('ov','All Verification',[['5','Verified'],['0','Unverified']]);
+if(oid){var dd=document.querySelector('details.ms[data-id="'+oid+'"]');if(dd)dd.setAttribute('open','')}}
 function draw(){var a=R.filter(function(r){return Object.keys(F).every(function(k){return !F[k].length||F[k].indexOf(r[k])>-1})});
 var kc=function(l,v){return '<div class="c"><div class="l">'+l+'</div><div class="v">'+v+'</div></div>'};
 var one=function(k){return fmt(sum(a,k))};
@@ -223,7 +225,7 @@ function maybeDump(rows,asOf){
   var td=asOf||today(),I={},S={},M={};
   rows.forEach(function(r){var m=M[r.user_id]=M[r.user_id]||{},lp=r['Loan Partners'],b=String(r.Admission_Year!==undefined?r.Admission_Year:r.Batch).trim(),n=r.Student_Name||r.Name;
     if(r.Campus_Name&&!m.c)m.c=String(r.Campus_Name).trim();if(/^\d{4}$/.test(b)&&!m.b)m.b=b;if(n&&!m.n)m.n=n;if(r.Active_Status&&!m.s)m.s=r.Active_Status;if(lp&&String(lp).trim()&&!m.l)m.l=String(lp).trim();
-    var k=r.uols_id,x=I[k];
+    if(MS.ov.length&&!vfOk(r))return;var k=r.uols_id,x=I[k];
     if(!x)x=I[k]={u:r.user_id,h:String(r.installment_name||'').trim(),sem:parseInt(String(r.Term||'').replace(/\D/g,''))||0,due:num(r.post_amount),dl:xd(r.deadline),paid:0};
     x.paid+=num(r.paid_amount)});
   Object.keys(I).forEach(function(k){var x=I[k],m=M[x.u];if(!m.c||!m.b)return;/* students without campus/batch are not active students */
@@ -254,7 +256,11 @@ function hdrTable(a){var td=today(),M={},ORD=[];for(var i=1;i<=8;i++)ORD.push('S
   var T={d:0,p:0,dt:0,pt:0};
   var rows=L.map(function(m){T.d+=m.d;T.p+=m.p;T.dt+=m.dt;T.pt+=m.pt;return[m.g+' · Sem '+(m.sem||'-'),Object.keys(m.s).length,fmt(m.d),fmt(m.p),fmt(m.d-m.p),fmt(m.dt),fmt(m.pt),fmt(m.dt-m.pt)]});
   tbl('hd',['Fee header · Semester','Students','Total fee','Collected','Pending','Fee till date','Collected till date','Pending till date'],rows,['Total','',fmt(T.d),fmt(T.p),fmt(T.d-T.p),fmt(T.dt),fmt(T.pt),fmt(T.dt-T.pt)])}
-function load(rows,label,keep){rows=maybeDump(rows);rows=rows.filter(function(r){return r.ID&&r.Name&&r.ID!=='ID'&&String(r.Active_Status).trim().toLowerCase()==='active'});IDX={};rows.forEach(function(r){r.Batch=String(r.Batch==null?'':r.Batch).trim();r.Campus_Name=String(r.Campus_Name==null?'':r.Campus_Name).trim()});rows.forEach(splitYear);;rows.forEach(function(r){var c=cs(r.Batch);IDX[r.ID]=r;if(r._y){var pv=0;for(var k=1;k<c;k++)pv+=num(r['Sem'+k+' Fee Pending']);r['Previous pending']=pv}r._cp=num(r['Sem'+c+' Fee Paid']);r._ce=num(r['Sem'+c+' Fee Pending']);r._cf=r._cp+r._ce});R=rows;if(!keep){MS.oc.length=0;MS.ob.length=0;MS.op.length=0}$('src').textContent=label;build();draw();fillF();if(pg===2)drawS();if(pg===3)drawF()}
+/* ---- verified / unverified filter (verify_status_final: 5 = verified, 0 = unverified) ---- */
+var RAWD=null,RAWL='';
+function vfOk(r){var v=String(r.verify_final!==undefined?r.verify_final:r.verify_status_final).trim();if(v==='5.0')v='5';if(v==='0.0')v='0';return MS.ov.indexOf(v)>-1}
+function reloadVF(){if(RAWD)load(RAWD,RAWL,true)}
+function load(rows,label,keep){RAWD=(rows.length&&rows[0].uols_id!==undefined)?rows:null;RAWL=label;rows=maybeDump(rows);rows=rows.filter(function(r){return r.ID&&r.Name&&r.ID!=='ID'&&String(r.Active_Status).trim().toLowerCase()==='active'});IDX={};rows.forEach(function(r){r.Batch=String(r.Batch==null?'':r.Batch).trim();r.Campus_Name=String(r.Campus_Name==null?'':r.Campus_Name).trim()});rows.forEach(splitYear);;rows.forEach(function(r){var c=cs(r.Batch);IDX[r.ID]=r;if(r._y){var pv=0;for(var k=1;k<c;k++)pv+=num(r['Sem'+k+' Fee Pending']);r['Previous pending']=pv}r._cp=num(r['Sem'+c+' Fee Paid']);r._ce=num(r['Sem'+c+' Fee Pending']);r._cf=r._cp+r._ce});R=rows;if(!keep){MS.oc.length=0;MS.ob.length=0;MS.op.length=0;MS.ov.length=0}$('src').textContent=label;build();draw();fillF();if(pg===2)drawS();if(pg===3)drawF()}
 $('q').oninput=draw;
 $('f').onchange=function(e){var f=e.target.files[0];if(!f)return;Papa.parse(f,{header:true,skipEmptyLines:true,complete:function(r){load(r.data,f.name+' ('+r.data.length+' rows)')}})};
 function demo(){var C=['Delhi','Pune','Bangalore','Jaipur'],B=['2023','2024','2025'],P=['B.Tech CSE','BBA'],L=['None','Partner A','Partner B'],BK=['0','1-30 days','31-60 days','60+ days'],d=[];
