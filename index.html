@@ -120,6 +120,7 @@ select,input{border-radius:10px}select:focus,input:focus{outline:2px solid var(-
 <div class="g2"><div class="c"><h3>Campus-wise (fees due till date)</h3><div class="lg"><b class="p"></b>Paid<b class="q"></b>Pending</div><div id="cm"></div></div>
 <div class="c"><h3>Batch-wise (fees due till date)</h3><div class="lg"><b class="p"></b>Paid<b class="q"></b>Pending</div><div id="bt"></div></div></div>
 <div class="c" style="margin-bottom:12px"><h3>Campus x Batch (fees due till date)</h3><div class="tw"><table id="cb" style="min-width:760px"></table></div></div>
+<div class="c" style="margin-bottom:12px"><h3>Verified / Unverified (as per selected filters)</h3><div class="tw"><table id="vf" style="min-width:760px"></table></div></div>
 <div class="c" style="margin-bottom:12px"><h3>Campus-wise (all metrics)</h3><div class="tw"><table id="cp" style="min-width:1150px"></table></div></div>
 <div class="c" style="margin-bottom:12px"><h3>Batch-wise (all metrics)</h3><div class="tw"><table id="bt2" style="min-width:1150px"></table></div></div>
 <div class="c" style="margin-bottom:12px"><h3>Loan type-wise (all metrics)</h3><div class="tw"><table id="ln" style="min-width:1150px"></table></div></div>
@@ -213,7 +214,7 @@ var lg=group(a.map(function(r){return Object.assign({},r,{LT:cat(r['Loan Partner
 MT('ln','Loan type',lg,['Self Pay','Bank Loan','DRCC','Sunstone Loan'].filter(function(n){return lg[n]}));
 var sh=['Batch'];for(var i=1;i<=8;i++)sh.push('Sem '+i+' pending');sh.push('Total pending');
 var brow=function(n,g){var r=[n];for(var i=1;i<=8;i++)r.push(fmt(sum(g,'Sem'+i+' Fee Pending')));r.push(fmt(sum(g,'Total Fee Pending')));return r};
-tbl('bs',sh,Object.keys(bg).sort().map(function(n){return brow(n,bg[n])}),brow('Total',a));hdrTable(a);cbTable(a);
+tbl('bs',sh,Object.keys(bg).sort().map(function(n){return brow(n,bg[n])}),brow('Total',a));hdrTable(a);cbTable(a);vfTable(a);
 var t=$('q').value.toLowerCase();
 var top=a.filter(function(r){return num(r['Total Fee Pending Till Date'])>0&&(!t||(String(r.Name)+String(r.ID)).toLowerCase().indexOf(t)>-1)}).sort(function(x,y){return num(y['Total Fee Pending Till Date'])-num(x['Total Fee Pending Till Date'])}).slice(0,50);
 $('tb').innerHTML=top.map(function(r){return '<tr><td>'+(r.Name||'')+'</td><td>'+(r.ID||'')+'</td><td>'+(r.Campus_Name||'')+'</td><td>'+(r.Batch||'')+'</td><td class="bad">'+fmt(num(r['Total Fee Pending Till Date']))+'</td><td>'+fmt(r._ce)+'</td><td>'+fmt(num(r['Previous pending']))+'</td></tr>'}).join('')||'<tr><td colspan="7" class="sub">No students found</td></tr>';sortAll()}
@@ -226,12 +227,12 @@ function maybeDump(rows,asOf){
   rows.forEach(function(r){var m=M[r.user_id]=M[r.user_id]||{},lp=r['Loan Partners'],b=String(r.Admission_Year!==undefined?r.Admission_Year:r.Batch).trim(),n=r.Student_Name||r.Name;
     if(r.Campus_Name&&!m.c)m.c=String(r.Campus_Name).trim();if(/^\d{4}$/.test(b)&&!m.b)m.b=b;if(n&&!m.n)m.n=n;if(r.Active_Status&&!m.s)m.s=r.Active_Status;if(lp&&String(lp).trim()&&!m.l)m.l=String(lp).trim();
     if(MS.ov.length&&!vfOk(r))return;var k=r.uols_id,x=I[k];
-    if(!x)x=I[k]={u:r.user_id,h:String(r.installment_name||'').trim(),sem:parseInt(String(r.Term||'').replace(/\D/g,''))||0,due:num(r.post_amount),dl:xd(r.deadline),paid:0};
+    if(!x)x=I[k]={u:r.user_id,v:vfVal(r),h:String(r.installment_name||'').trim(),sem:parseInt(String(r.Term||'').replace(/\D/g,''))||0,due:num(r.post_amount),dl:xd(r.deadline),paid:0};
     x.paid+=num(r.paid_amount)});
   Object.keys(I).forEach(function(k){var x=I[k],m=M[x.u];if(!m.c||!m.b)return;/* students without campus/batch are not active students */
     var p=Math.max(0,Math.min(x.paid,x.due)),q=x.due-p,
     o=S[x.u]=S[x.u]||{Batch:m.b,ID:x.u,Name:m.n||('User '+x.u),Campus_Name:m.c,Active_Status:m.s||'Active','Loan Partners':m.l||'','Total Fee':0,'Total Fee Paid':0,'Total Fee Pending':0,'Total Fee Till Date':0,'Total Fee Paid Till Date':0,'Total Fee Pending Till Date':0,'Previous pending':0,_I:[]};
-    o._I.push({h:x.h,sem:x.sem,due:x.due,paid:p,dl:x.dl});o['Total Fee']+=x.due;o['Total Fee Paid']+=x.paid;
+    o._I.push({v:x.v,h:x.h,sem:x.sem,due:x.due,paid:p,dl:x.dl});o['Total Fee']+=x.due;o['Total Fee Paid']+=x.paid;
     if(x.dl&&x.dl<=td){o['Total Fee Till Date']+=x.due;o['Total Fee Paid Till Date']+=x.paid}
     if(x.sem>=1&&x.sem<=8){o['Sem'+x.sem+' Fee Paid']=(o['Sem'+x.sem+' Fee Paid']||0)+p;o['Sem'+x.sem+' Fee Pending']=(o['Sem'+x.sem+' Fee Pending']||0)+q}});
   return Object.keys(S).map(function(u){var o=S[u],c=cs(o.Batch),pv=0;
@@ -258,7 +259,14 @@ function hdrTable(a){var td=today(),M={},ORD=[];for(var i=1;i<=8;i++)ORD.push('S
   tbl('hd',['Fee header · Semester','Students','Total fee','Collected','Pending','Fee till date','Collected till date','Pending till date'],rows,['Total','',fmt(T.d),fmt(T.p),fmt(T.d-T.p),fmt(T.dt),fmt(T.pt),fmt(T.dt-T.pt)])}
 /* ---- verified / unverified filter (verify_status_final: 5 = verified, 0 = unverified) ---- */
 var RAWD=null,RAWL='';
-function vfOk(r){var v=String(r.verify_final!==undefined?r.verify_final:r.verify_status_final).trim();if(v==='5.0')v='5';if(v==='0.0')v='0';return MS.ov.indexOf(v)>-1}
+function vfVal(r){var v=String(r.verify_final!==undefined?r.verify_final:(r.verify_status_final!==undefined?r.verify_status_final:'')).trim();if(v==='5.0')v='5';if(v==='0.0')v='0';return v==='5'||v==='0'?v:''}
+function vfOk(r){return MS.ov.indexOf(vfVal(r))>-1}
+function vfTable(a){var td=today(),G={},ORD=[['5','Verified'],['0','Unverified'],['','Not marked']];
+  if(!a.some(function(r){return r._I})){$('vf').innerHTML='<tbody><tr><td class="sub">Verification data needs the fee sheet (verify_status_final column).</td></tr></tbody>';return}
+  a.forEach(function(r){(r._I||[]).forEach(function(x){var v=x.v||'',m=G[v]=G[v]||{s:{},d:0,p:0,dt:0,pt:0};m.s[r.ID]=1;m.d+=x.due;m.p+=x.paid;if(x.dl&&x.dl<=td){m.dt+=x.due;m.pt+=x.paid}})});
+  var T={s:{},d:0,p:0,dt:0,pt:0},rows=[];
+  ORD.forEach(function(o){var m=G[o[0]];if(!m)return;Object.keys(m.s).forEach(function(k){T.s[k]=1});T.d+=m.d;T.p+=m.p;T.dt+=m.dt;T.pt+=m.pt;rows.push([o[1],Object.keys(m.s).length,fmt(m.d),fmt(m.p),fmt(m.d-m.p),fmt(m.dt),fmt(m.pt),fmt(m.dt-m.pt)])});
+  tbl('vf',['Verification','Students','Total fee','Collected','Pending','Fee till date','Collected till date','Pending till date'],rows,['Total',Object.keys(T.s).length,fmt(T.d),fmt(T.p),fmt(T.d-T.p),fmt(T.dt),fmt(T.pt),fmt(T.dt-T.pt)])}
 function reloadVF(){if(RAWD)load(RAWD,RAWL,true)}
 function load(rows,label,keep){RAWD=(rows.length&&rows[0].uols_id!==undefined)?rows:null;RAWL=label;rows=maybeDump(rows);rows=rows.filter(function(r){return r.ID&&r.Name&&r.ID!=='ID'&&String(r.Active_Status).trim().toLowerCase()==='active'});IDX={};rows.forEach(function(r){r.Batch=String(r.Batch==null?'':r.Batch).trim();r.Campus_Name=String(r.Campus_Name==null?'':r.Campus_Name).trim()});rows.forEach(splitYear);;rows.forEach(function(r){var c=cs(r.Batch);IDX[r.ID]=r;if(r._y){var pv=0;for(var k=1;k<c;k++)pv+=num(r['Sem'+k+' Fee Pending']);r['Previous pending']=pv}r._cp=num(r['Sem'+c+' Fee Paid']);r._ce=num(r['Sem'+c+' Fee Pending']);r._cf=r._cp+r._ce});R=rows;if(!keep){MS.oc.length=0;MS.ob.length=0;MS.op.length=0;MS.ov.length=0}$('src').textContent=label;build();draw();fillF();if(pg===2)drawS();if(pg===3)drawF()}
 $('q').oninput=draw;
